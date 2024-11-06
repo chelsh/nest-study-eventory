@@ -18,12 +18,12 @@ export class EventService {
       payload.categoryId,
     );
     if (!isCategoryExist) {
-      throw new BadRequestException('해당 카테고리가 존재하지 않습니다.');
+      throw new NotFoundException('해당 카테고리가 존재하지 않습니다.');
     }
 
     const isCityExist = await this.eventRepository.isCityExist(payload.cityId);
     if (!isCityExist) {
-      throw new BadRequestException('해당 도시가 존재하지 않습니다.');
+      throw new NotFoundException('해당 도시가 존재하지 않습니다.');
     }
 
     if (payload.startTime < new Date()) {
@@ -34,10 +34,6 @@ export class EventService {
 
     if (payload.startTime >= payload.endTime) {
       throw new BadRequestException('Event는 시작 후에 종료될 수 있습니다.');
-    }
-
-    if (payload.maxPeople < 2) {
-      throw new BadRequestException('Event에는 2명 이상 참가해야 합니다.');
     }
 
     const user = await this.eventRepository.getUserById(payload.hostId);
@@ -57,6 +53,12 @@ export class EventService {
     };
 
     const event = await this.eventRepository.createEvent(createData);
+
+    //host를 event 참여 인원에 추가
+    await this.eventRepository.joinHostToEvent({
+      eventId: event.id,
+      hostId: event.hostId,
+    });
 
     return EventDto.from(event);
   }
