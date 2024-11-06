@@ -1,5 +1,6 @@
 import {
   BadRequestException,
+  ConflictException,
   Injectable,
   NotFoundException,
 } from '@nestjs/common';
@@ -55,9 +56,9 @@ export class EventService {
     const event = await this.eventRepository.createEvent(createData);
 
     //host를 event 참여 인원에 추가
-    await this.eventRepository.joinHostToEvent({
+    await this.eventRepository.joinUserToEvent({
       eventId: event.id,
-      hostId: event.hostId,
+      userId: event.hostId,
     });
 
     return EventDto.from(event);
@@ -76,5 +77,38 @@ export class EventService {
   async getEvents(query: EventQuery): Promise<EventListDto> {
     const events = await this.eventRepository.getEvents(query);
     return EventListDto.from(events);
+  }
+
+  async joinEvent(eventId: number, userId: number): Promise<void> {
+    const user = await this.eventRepository.getUserById(userId);
+    if (!user) {
+      throw new NotFoundException('존재하지 않는 user입니다.');
+    }
+
+    const event = await this.eventRepository.getEventById(eventId);
+    if (!event) {
+      throw new NotFoundException('존재하지 않는 event입니다.');
+    }
+
+    const isUserJoinedEvent = await this.eventRepository.isUserJoinedEvent(
+      eventId,
+      userId,
+    );
+    if (isUserJoinedEvent) {
+      throw new ConflictException('user가 이미 참여 중인 event입니다.');
+    }
+
+    const isEventFull = await this.eventRepository.isEventFull(eventId);
+    if (isEventFull) {
+      throw new ConflictException('이미 정원이 다 찬 event입니다.');
+    }
+
+    if (event.startTime < new Date()) {
+      throw new ConflictException(
+        '이미 시작된 event입니다.(진행 중이거나 종료됨)',
+      );
+    }
+
+    await this.eventRepository.joinUserToEvent({ eventId, userId });
   }
 }

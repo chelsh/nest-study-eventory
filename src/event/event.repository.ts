@@ -64,15 +64,15 @@ export class EventRepository {
     return !!city;
   }
 
-  async joinHostToEvent({
+  async joinUserToEvent({
     eventId,
-    hostId,
+    userId,
   }: {
     eventId: number;
-    hostId: number;
+    userId: number;
   }): Promise<void> {
     await this.prisma.eventJoin.create({
-      data: { eventId, userId: hostId },
+      data: { eventId, userId },
     });
   }
 
@@ -112,5 +112,32 @@ export class EventRepository {
         maxPeople: true,
       },
     });
+  }
+
+  async isUserJoinedEvent(eventId: number, userId: number): Promise<boolean> {
+    const eventJoin = await this.prisma.eventJoin.findUnique({
+      where: {
+        eventId_userId: {
+          eventId,
+          userId,
+        },
+        user: {
+          deletedAt: null,
+        },
+      },
+    });
+
+    return !!eventJoin;
+  }
+
+  async isEventFull(eventId: number): Promise<boolean> {
+    const event = await this.prisma.event.findUnique({
+      where: { id: eventId },
+    });
+    const countJoinedUsers = await this.prisma.eventJoin.count({
+      where: { eventId, user: { deletedAt: null } },
+    });
+
+    return event!.maxPeople === countJoinedUsers;
   }
 }

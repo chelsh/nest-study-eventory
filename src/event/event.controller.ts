@@ -1,5 +1,6 @@
 import {
   ApiCreatedResponse,
+  ApiNoContentResponse,
   ApiOkResponse,
   ApiOperation,
 } from '@nestjs/swagger';
@@ -16,6 +17,7 @@ import {
 import { EventDto, EventListDto } from './dto/event.dto';
 import { CreateEventPayload } from './payload/create-event.payload';
 import { EventQuery } from './query/event.query';
+import { EventJoinPayload } from './payload/event-join.payload';
 
 @Controller('events')
 export class EventController {
@@ -24,7 +26,7 @@ export class EventController {
   @Post()
   @ApiOperation({ summary: '이벤트를 생성합니다' })
   @ApiCreatedResponse({ type: EventDto })
-  async createReview(@Body() payload: CreateEventPayload): Promise<EventDto> {
+  async createEvent(@Body() payload: CreateEventPayload): Promise<EventDto> {
     return this.eventService.createEvent(payload);
   }
 
@@ -44,7 +46,16 @@ export class EventController {
   })
   @ApiOkResponse({ type: EventListDto })
   async getEvents(@Query() query: EventQuery): Promise<EventListDto> {
-    console.log(query);
     return this.eventService.getEvents(query);
+  }
+
+  @Post(':eventId/join')
+  @ApiOperation({ summary: 'user가 이벤트에 참여합니다.' })
+  @ApiNoContentResponse()
+  async joinEvent(
+    @Param('eventId', ParseIntPipe) eventId: number,
+    @Body() payload: EventJoinPayload,
+  ): Promise<void> {
+    return this.eventService.joinEvent(eventId, payload.userId);
   }
 }
