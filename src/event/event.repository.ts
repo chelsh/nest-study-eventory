@@ -62,4 +62,21 @@ export class EventRepository {
 
     return !!city;
   }
+
+  async getEventById(eventId: number): Promise<EventData | null> {
+    return this.prisma.event.findUnique({
+      where: { id: eventId },
+      select: {
+        id: true,
+        hostId: true,
+        title: true,
+        description: true,
+        categoryId: true,
+        cityId: true,
+        startTime: true,
+        endTime: true,
+        maxPeople: true,
+      },
+    });
+  }
 }
