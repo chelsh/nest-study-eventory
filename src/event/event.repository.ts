@@ -3,6 +3,7 @@ import { PrismaService } from '../common/services/prisma.service';
 import { CreateEventData } from './type/create-event-data.type';
 import { EventData } from './type/event-data.type';
 import { User } from '@prisma/client';
+import { EventQuery } from './query/event.query';
 
 @Injectable()
 export class EventRepository {
@@ -66,6 +67,27 @@ export class EventRepository {
   async getEventById(eventId: number): Promise<EventData | null> {
     return this.prisma.event.findUnique({
       where: { id: eventId },
+      select: {
+        id: true,
+        hostId: true,
+        title: true,
+        description: true,
+        categoryId: true,
+        cityId: true,
+        startTime: true,
+        endTime: true,
+        maxPeople: true,
+      },
+    });
+  }
+
+  async getEvents(query: EventQuery): Promise<EventData[]> {
+    return await this.prisma.event.findMany({
+      where: {
+        hostId: query.hostId,
+        cityId: query.cityId,
+        categoryId: query.categoryId,
+      },
       select: {
         id: true,
         hostId: true,
