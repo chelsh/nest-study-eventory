@@ -1,6 +1,6 @@
 import { ApiProperty } from '@nestjs/swagger';
 import { Type } from 'class-transformer';
-import { IsDate, IsInt, IsPositive, IsString, Min } from 'class-validator';
+import { IsDate, IsInt, IsString, Min } from 'class-validator';
 
 export class CreateEventPayload {
   @IsInt()
@@ -54,7 +54,6 @@ export class CreateEventPayload {
   })
   endTime!: Date;
 
-  @IsPositive()
   @Min(2) //모임은 두 명 이상(호스트 포함)
   @IsInt()
   @ApiProperty({

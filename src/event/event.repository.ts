@@ -64,6 +64,18 @@ export class EventRepository {
     return !!city;
   }
 
+  async joinHostToEvent({
+    eventId,
+    hostId,
+  }: {
+    eventId: number;
+    hostId: number;
+  }): Promise<void> {
+    await this.prisma.eventJoin.create({
+      data: { eventId, userId: hostId },
+    });
+  }
+
   async getEventById(eventId: number): Promise<EventData | null> {
     return this.prisma.event.findUnique({
       where: { id: eventId },
