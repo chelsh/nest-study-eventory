@@ -4,13 +4,14 @@ import { CreateEventData } from './type/create-event-data.type';
 import { EventData } from './type/event-data.type';
 import { User } from '@prisma/client';
 import { EventQuery } from './query/event.query';
+import { EventDetailData, EventStatus } from './type/event-detail-data.type';
 
 @Injectable()
 export class EventRepository {
   constructor(private readonly prisma: PrismaService) {}
 
-  async createEvent(data: CreateEventData): Promise<EventData> {
-    return this.prisma.event.create({
+  async createEvent(data: CreateEventData): Promise<EventDetailData> {
+    const createdEvent = await this.prisma.event.create({
       data: {
         hostId: data.hostId,
         title: data.title,
@@ -21,18 +22,44 @@ export class EventRepository {
         endTime: data.endTime,
         maxPeople: data.maxPeople,
       },
-      select: {
-        id: true,
-        hostId: true,
-        title: true,
-        description: true,
-        categoryId: true,
-        cityId: true,
-        startTime: true,
-        endTime: true,
-        maxPeople: true,
-      },
     });
+
+    await this.joinUserToEvent({
+      eventId: createdEvent.id,
+      userId: createdEvent.hostId,
+    });
+
+    const { status, joinedUsers, reviews } = await this.getMoreEventDetail(
+      createdEvent.id,
+      createdEvent.startTime,
+      createdEvent.endTime,
+    );
+
+    return { ...createdEvent, status, joinedUsers, reviews };
+  }
+
+  //get status, joinedUsers, reviews
+  async getMoreEventDetail(eventId: number, startTime: Date, endTime: Date) {
+    const status =
+      new Date() < startTime
+        ? EventStatus.PENDING
+        : endTime < new Date()
+          ? EventStatus.COMPLETED
+          : EventStatus.ONGOING;
+
+    const joinedUserObjects = await this.prisma.eventJoin.findMany({
+      where: { eventId, user: { deletedAt: null } },
+      select: { user: { select: { id: true, name: true } } },
+    });
+    const joinedUsers = joinedUserObjects.map((userObj) => {
+      return { id: userObj.user.id, name: userObj.user.name };
+    });
+
+    const reviews = await this.prisma.review.findMany({
+      where: { eventId },
+    });
+
+    return { status, joinedUsers, reviews };
   }
 
   async getUserById(userId: number): Promise<User | null> {
@@ -76,8 +103,8 @@ export class EventRepository {
     });
   }
 
-  async getEventById(eventId: number): Promise<EventData | null> {
-    return this.prisma.event.findUnique({
+  async getEventById(eventId: number): Promise<EventDetailData | null> {
+    const event = await this.prisma.event.findUnique({
       where: { id: eventId },
       select: {
         id: true,
@@ -91,6 +118,16 @@ export class EventRepository {
         maxPeople: true,
       },
     });
+
+    if (!event) return event;
+
+    const { status, joinedUsers, reviews } = await this.getMoreEventDetail(
+      event.id,
+      event.startTime,
+      event.endTime,
+    );
+
+    return { ...event, status, joinedUsers, reviews };
   }
 
   async getEvents(query: EventQuery): Promise<EventData[]> {
