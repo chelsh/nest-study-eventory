@@ -6,15 +6,16 @@ import {
 } from '@nestjs/common';
 import { EventRepository } from './event.repository';
 import { CreateEventPayload } from './payload/create-event.payload';
-import { EventDto, EventListDto } from './dto/event.dto';
+import { EventListDto } from './dto/event.dto';
 import { CreateEventData } from './type/create-event-data.type';
 import { EventQuery } from './query/event.query';
+import { EventDetailDto } from './dto/event-detail.dto';
 
 @Injectable()
 export class EventService {
   constructor(private readonly eventRepository: EventRepository) {}
 
-  async createEvent(payload: CreateEventPayload): Promise<EventDto> {
+  async createEvent(payload: CreateEventPayload): Promise<EventDetailDto> {
     const isCategoryExist = await this.eventRepository.isCategoryExist(
       payload.categoryId,
     );
@@ -55,23 +56,24 @@ export class EventService {
 
     const event = await this.eventRepository.createEvent(createData);
 
-    //host를 event 참여 인원에 추가
-    await this.eventRepository.joinUserToEvent({
-      eventId: event.id,
-      userId: event.hostId,
-    });
+    // eventRepository.createEvent로 옮김(issue15)
+    // //host를 event 참여 인원에 추가
+    // await this.eventRepository.joinUserToEvent({
+    //   eventId: event.id,
+    //   userId: event.hostId,
+    // });
 
-    return EventDto.from(event);
+    return EventDetailDto.from(event);
   }
 
-  async getEventById(eventId: number): Promise<EventDto> {
+  async getEventById(eventId: number): Promise<EventDetailDto> {
     const event = await this.eventRepository.getEventById(eventId);
 
     if (!event) {
       throw new NotFoundException('Event가 존재하지 않습니다.');
     }
 
-    return EventDto.from(event);
+    return EventDetailDto.from(event);
   }
 
   async getEvents(query: EventQuery): Promise<EventListDto> {

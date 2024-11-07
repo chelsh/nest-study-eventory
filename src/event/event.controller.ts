@@ -3,6 +3,7 @@ import {
   ApiNoContentResponse,
   ApiOkResponse,
   ApiOperation,
+  ApiTags,
 } from '@nestjs/swagger';
 import { EventService } from './event.service';
 import {
@@ -20,6 +21,7 @@ import { EventQuery } from './query/event.query';
 import { EventJoinOutPayload } from './payload/event-join-out.payload';
 
 @Controller('events')
+@ApiTags('Event API')
 export class EventController {
   constructor(private readonly eventService: EventService) {}
 
