@@ -130,14 +130,40 @@ export class EventRepository {
     return !!eventJoin;
   }
 
-  async isEventFull(eventId: number): Promise<boolean> {
-    const event = await this.prisma.event.findUnique({
-      where: { id: eventId },
-    });
+  //isEventFull 대신 countJoinedUsers로 대체
+  // async isEventFull(eventId: number): Promise<boolean> {
+  //   const event = await this.prisma.event.findUnique({
+  //     where: { id: eventId },
+  //   });
+  //   const countJoinedUsers = await this.prisma.eventJoin.count({
+  //     where: { eventId, user: { deletedAt: null } },
+  //   });
+
+  //   return event!.maxPeople === countJoinedUsers;
+  // }
+
+  async countJoinedUsers(eventId: number): Promise<number> {
     const countJoinedUsers = await this.prisma.eventJoin.count({
       where: { eventId, user: { deletedAt: null } },
     });
 
-    return event!.maxPeople === countJoinedUsers;
+    return countJoinedUsers;
+  }
+
+  async outUserFromEvent({
+    eventId,
+    userId,
+  }: {
+    eventId: number;
+    userId: number;
+  }): Promise<void> {
+    await this.prisma.eventJoin.delete({
+      where: {
+        eventId_userId: {
+          eventId,
+          userId,
+        },
+      },
+    });
   }
 }
