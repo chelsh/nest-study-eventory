@@ -98,17 +98,51 @@ export class EventService {
       throw new ConflictException('user가 이미 참여 중인 event입니다.');
     }
 
-    const isEventFull = await this.eventRepository.isEventFull(eventId);
-    if (isEventFull) {
+    const countJoinedUsers =
+      await this.eventRepository.countJoinedUsers(eventId);
+    if (countJoinedUsers === event.maxPeople) {
       throw new ConflictException('이미 정원이 다 찬 event입니다.');
     }
 
     if (event.startTime < new Date()) {
       throw new ConflictException(
-        '이미 시작된 event입니다.(진행 중이거나 종료됨)',
+        '이미 시작된 event에는 참여할 수 없습니다.(진행 중이거나 종료됨)',
       );
     }
 
     await this.eventRepository.joinUserToEvent({ eventId, userId });
+  }
+
+  async outEvent(eventId: number, userId: number): Promise<void> {
+    //
+    const user = await this.eventRepository.getUserById(userId);
+    if (!user) {
+      throw new NotFoundException('존재하지 않는 user입니다.');
+    }
+
+    const event = await this.eventRepository.getEventById(eventId);
+    if (!event) {
+      throw new NotFoundException('존재하지 않는 event입니다.');
+    }
+
+    const isUserJoinedEvent = await this.eventRepository.isUserJoinedEvent(
+      eventId,
+      userId,
+    );
+    if (!isUserJoinedEvent) {
+      throw new ConflictException('user가 참여중이지 않은 event입니다.');
+    }
+
+    if (userId === event.hostId) {
+      throw new ConflictException('host는 event에서 나갈 수 없습니다.');
+    }
+
+    if (event.startTime < new Date()) {
+      throw new ConflictException(
+        '이미 시작된 event에서는 나갈 수 없습니다.(진행 중이거나 종료됨)',
+      );
+    }
+
+    await this.eventRepository.outUserFromEvent({ eventId, userId });
   }
 }
