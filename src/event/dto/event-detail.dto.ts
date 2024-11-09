@@ -74,7 +74,7 @@ export class EventDetailDto {
 
   @ApiProperty({
     description: '이벤트의 현재 상태',
-    type: () => EventStatus,
+    enum: EventStatus,
   })
   status!: EventStatusData;
 
