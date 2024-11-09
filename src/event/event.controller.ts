@@ -10,15 +10,17 @@ import {
   Body,
   Controller,
   Get,
+  HttpCode,
   Param,
   ParseIntPipe,
   Post,
   Query,
 } from '@nestjs/common';
-import { EventDto, EventListDto } from './dto/event.dto';
+import { EventListDto } from './dto/event.dto';
 import { CreateEventPayload } from './payload/create-event.payload';
 import { EventQuery } from './query/event.query';
 import { EventJoinOutPayload } from './payload/event-join-out.payload';
+import { EventDetailDto } from './dto/event-detail.dto';
 
 @Controller('events')
 @ApiTags('Event API')
@@ -26,18 +28,21 @@ export class EventController {
   constructor(private readonly eventService: EventService) {}
 
   @Post()
+  @HttpCode(204)
   @ApiOperation({ summary: '이벤트를 생성합니다' })
-  @ApiCreatedResponse({ type: EventDto })
-  async createEvent(@Body() payload: CreateEventPayload): Promise<EventDto> {
+  @ApiCreatedResponse({ type: EventDetailDto })
+  async createEvent(
+    @Body() payload: CreateEventPayload,
+  ): Promise<EventDetailDto> {
     return this.eventService.createEvent(payload);
   }
 
   @Get(':eventId')
   @ApiOperation({ summary: '이벤트 상세 정보를 조회합니다' })
-  @ApiOkResponse({ type: EventDto })
+  @ApiOkResponse({ type: EventDetailDto })
   async getEventById(
     @Param('eventId', ParseIntPipe) eventId: number,
-  ): Promise<EventDto> {
+  ): Promise<EventDetailDto> {
     return this.eventService.getEventById(eventId);
   }
 
@@ -52,6 +57,7 @@ export class EventController {
   }
 
   @Post(':eventId/join')
+  @HttpCode(204)
   @ApiOperation({ summary: 'user가 이벤트에 참여합니다.' })
   @ApiNoContentResponse()
   async joinEvent(
@@ -62,6 +68,7 @@ export class EventController {
   }
 
   @Post(':eventId/out')
+  @HttpCode(204)
   @ApiOperation({ summary: 'user가 이벤트에서 나갑니다.' })
   @ApiNoContentResponse()
   async outEvent(

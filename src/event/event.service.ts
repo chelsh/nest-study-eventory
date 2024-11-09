@@ -10,21 +10,26 @@ import { EventListDto } from './dto/event.dto';
 import { CreateEventData } from './type/create-event-data.type';
 import { EventQuery } from './query/event.query';
 import { EventDetailDto } from './dto/event-detail.dto';
+import { EventStatus } from './enum/event-status.enum';
 
 @Injectable()
 export class EventService {
   constructor(private readonly eventRepository: EventRepository) {}
 
   async createEvent(payload: CreateEventPayload): Promise<EventDetailDto> {
-    const isCategoryExist = await this.eventRepository.isCategoryExist(
+    const categoryExistPromise = this.eventRepository.categoryExist(
       payload.categoryId,
     );
-    if (!isCategoryExist) {
+    const cityExistPromise = this.eventRepository.cityExist(payload.cityId);
+    const [categoryExist, cityExist] = await Promise.all([
+      categoryExistPromise,
+      cityExistPromise,
+    ]);
+
+    if (!categoryExist) {
       throw new NotFoundException('해당 카테고리가 존재하지 않습니다.');
     }
-
-    const isCityExist = await this.eventRepository.isCityExist(payload.cityId);
-    if (!isCityExist) {
+    if (!cityExist) {
       throw new NotFoundException('해당 도시가 존재하지 않습니다.');
     }
 
@@ -56,14 +61,22 @@ export class EventService {
 
     const event = await this.eventRepository.createEvent(createData);
 
-    // eventRepository.createEvent로 옮김(issue15)
-    // //host를 event 참여 인원에 추가
-    // await this.eventRepository.joinUserToEvent({
-    //   eventId: event.id,
-    //   userId: event.hostId,
-    // });
+    const status =
+      new Date() < event.startTime
+        ? EventStatus.PENDING
+        : event.endTime < new Date()
+          ? EventStatus.COMPLETED
+          : EventStatus.ONGOING;
 
-    return EventDetailDto.from(event);
+    const joinedUsers = (
+      await this.eventRepository.getJoinedUsers(event.id)
+    ).map((user) => {
+      return { id: user.id, name: user.name };
+    });
+
+    const reviews = await this.eventRepository.getReviews(event.id);
+
+    return EventDetailDto.from({ ...event, status, joinedUsers, reviews });
   }
 
   async getEventById(eventId: number): Promise<EventDetailDto> {
@@ -73,7 +86,22 @@ export class EventService {
       throw new NotFoundException('Event가 존재하지 않습니다.');
     }
 
-    return EventDetailDto.from(event);
+    const status =
+      new Date() < event.startTime
+        ? EventStatus.PENDING
+        : event.endTime < new Date()
+          ? EventStatus.COMPLETED
+          : EventStatus.ONGOING;
+
+    const joinedUsers = (
+      await this.eventRepository.getJoinedUsers(event.id)
+    ).map((user) => {
+      return { id: user.id, name: user.name };
+    });
+
+    const reviews = await this.eventRepository.getReviews(event.id);
+
+    return EventDetailDto.from({ ...event, status, joinedUsers, reviews });
   }
 
   async getEvents(query: EventQuery): Promise<EventListDto> {
@@ -82,12 +110,13 @@ export class EventService {
   }
 
   async joinEvent(eventId: number, userId: number): Promise<void> {
-    const user = await this.eventRepository.getUserById(userId);
+    const userPromise = this.eventRepository.getUserById(userId);
+    const eventPromise = this.eventRepository.getEventById(eventId);
+    const [user, event] = await Promise.all([userPromise, eventPromise]);
+
     if (!user) {
       throw new NotFoundException('존재하지 않는 user입니다.');
     }
-
-    const event = await this.eventRepository.getEventById(eventId);
     if (!event) {
       throw new NotFoundException('존재하지 않는 event입니다.');
     }
@@ -112,17 +141,17 @@ export class EventService {
       );
     }
 
-    await this.eventRepository.joinUserToEvent({ eventId, userId });
+    await this.eventRepository.joinUserToEvent(eventId, userId);
   }
 
   async outEvent(eventId: number, userId: number): Promise<void> {
-    //
-    const user = await this.eventRepository.getUserById(userId);
+    const userPromise = this.eventRepository.getUserById(userId);
+    const eventPromise = this.eventRepository.getEventById(eventId);
+    const [user, event] = await Promise.all([userPromise, eventPromise]);
+
     if (!user) {
       throw new NotFoundException('존재하지 않는 user입니다.');
     }
-
-    const event = await this.eventRepository.getEventById(eventId);
     if (!event) {
       throw new NotFoundException('존재하지 않는 event입니다.');
     }

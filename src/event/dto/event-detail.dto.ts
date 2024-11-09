@@ -1,6 +1,7 @@
 import { ApiProperty } from '@nestjs/swagger';
 import { ReviewDto } from 'src/review/dto/review.dto';
-import { EventDetailData, EventStatus } from '../type/event-detail-data.type';
+import { EventDetailData } from '../type/event-detail-data.type';
+import { EventStatus, EventStatusData } from '../enum/event-status.enum';
 
 export class JoinedUserDto {
   @ApiProperty({
@@ -73,9 +74,9 @@ export class EventDetailDto {
 
   @ApiProperty({
     description: '이벤트의 현재 상태',
-    type: EventStatus,
+    type: () => EventStatus,
   })
-  status!: EventStatus;
+  status!: EventStatusData;
 
   @ApiProperty({
     description: '참여하는 유저 목록',
@@ -101,8 +102,19 @@ export class EventDetailDto {
       endTime: event.endTime,
       maxPeople: event.maxPeople,
       status: event.status,
-      joinedUsers: event.joinedUsers,
-      reviews: event.reviews,
+      joinedUsers: event.joinedUsers.map((user) => {
+        return { id: user.id, name: user.name };
+      }),
+      reviews: event.reviews.map((review) => {
+        return {
+          id: review.id,
+          userId: review.userId,
+          eventId: review.eventId,
+          score: review.score,
+          title: review.title,
+          description: review.description,
+        };
+      }),
     };
   }
 
