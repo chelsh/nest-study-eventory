@@ -28,7 +28,6 @@ export class EventController {
   constructor(private readonly eventService: EventService) {}
 
   @Post()
-  @HttpCode(204)
   @ApiOperation({ summary: '이벤트를 생성합니다' })
   @ApiCreatedResponse({ type: EventDetailDto })
   async createEvent(

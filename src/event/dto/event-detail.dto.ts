@@ -110,16 +110,7 @@ export class EventDetailDto {
       joinedUsers: event.eventJoin.map((eventJoin) => {
         return { id: eventJoin.user.id, name: eventJoin.user.name };
       }),
-      reviews: event.review.map((review) => {
-        return {
-          id: review.id,
-          userId: review.userId,
-          eventId: review.eventId,
-          score: review.score,
-          title: review.title,
-          description: review.description,
-        };
-      }),
+      reviews: ReviewDto.fromArray(event.review),
     };
   }
 

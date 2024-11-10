@@ -33,7 +33,16 @@ export class EventRepository {
         startTime: true,
         endTime: true,
         maxPeople: true,
-        eventJoin: { select: { user: { select: { id: true, name: true } } } },
+        eventJoin: {
+          select: {
+            user: {
+              select: {
+                id: true,
+                name: true,
+              },
+            },
+          },
+        },
         review: {
           select: {
             id: true,
