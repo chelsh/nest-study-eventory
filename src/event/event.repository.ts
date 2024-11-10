@@ -4,7 +4,6 @@ import { CreateEventData } from './type/create-event-data.type';
 import { EventData } from './type/event-data.type';
 import { User } from '@prisma/client';
 import { EventQuery } from './query/event.query';
-import { ReviewData } from 'src/review/type/review-data.type';
 import { EventDetailData } from './type/event-detail-data.type';
 
 @Injectable()
@@ -45,20 +44,6 @@ export class EventRepository {
             description: true,
           },
         },
-      },
-    });
-  }
-
-  async getReviews(eventId: number): Promise<ReviewData[]> {
-    return this.prisma.review.findMany({
-      where: { eventId },
-      select: {
-        id: true,
-        eventId: true,
-        userId: true,
-        score: true,
-        title: true,
-        description: true,
       },
     });
   }
