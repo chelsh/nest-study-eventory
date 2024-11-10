@@ -1,3 +1,5 @@
+import { ReviewData } from 'src/review/type/review-data.type';
+
 export type EventDetailData = {
   id: number;
   hostId: number;
@@ -8,25 +10,11 @@ export type EventDetailData = {
   startTime: Date;
   endTime: Date;
   maxPeople: number;
-  status: EventStatus;
-  joinedUsers: {
-    id: number;
-    name: string;
+  eventJoin: {
+    user: {
+      id: number;
+      name: string;
+    };
   }[];
-  reviews: {
-    id: number;
-    eventId: number;
-    userId: number;
-    score: number;
-    title: string;
-    description: string | null;
-  }[];
+  review: ReviewData[];
 };
-
-export const EventStatus = {
-  PENDING: 'PENDING', // 시작 전
-  ONGOING: 'ONGOING', // 진행 중
-  COMPLETED: 'COMPLETED', // 종료
-};
-
-export type EventStatus = (typeof EventStatus)[keyof typeof EventStatus];
