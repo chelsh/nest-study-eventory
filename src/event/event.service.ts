@@ -10,6 +10,7 @@ import { EventListDto } from './dto/event.dto';
 import { CreateEventData } from './type/create-event-data.type';
 import { EventQuery } from './query/event.query';
 import { EventDetailDto } from './dto/event-detail.dto';
+import { UpdateEventPayload } from './payload/update-event.payload';
 
 @Injectable()
 export class EventService {
@@ -143,6 +144,60 @@ export class EventService {
       );
     }
 
-    await this.eventRepository.outUserFromEvent({ eventId, userId });
+    await this.eventRepository.outUserFromEvent(eventId, userId);
+  }
+
+  async updateEvent(
+    eventId: number,
+    payload: UpdateEventPayload,
+  ): Promise<EventDetailDto> {
+    const event = await this.eventRepository.getEventById(eventId);
+    if (!event) {
+      throw new NotFoundException('Event가 존재하지 않습니다.');
+    }
+
+    if (payload.categoryId) {
+      const categoryExist = await this.eventRepository.categoryExist(
+        payload.categoryId,
+      );
+      if (!categoryExist) {
+        throw new NotFoundException('해당 카테고리가 존재하지 않습니다.');
+      }
+    }
+
+    if (payload.cityId) {
+      const cityExist = this.eventRepository.categoryExist(payload.cityId);
+      if (!cityExist) {
+        throw new NotFoundException('해당 도시가 존재하지 않습니다.');
+      }
+    }
+
+    const startTime = payload.startTime ? payload.startTime : event.startTime;
+    const endTime = payload.endTime ? payload.endTime : event.endTime;
+    if (startTime < new Date()) {
+      throw new BadRequestException(
+        'Event는 현재시간 이후에 시작할 수 있습니다.',
+      );
+    }
+    if (startTime >= endTime) {
+      throw new BadRequestException('Event는 시작 후에 종료될 수 있습니다.');
+    }
+
+    if (payload.maxPeople) {
+      const countJoinedUsers =
+        await this.eventRepository.countJoinedUsers(eventId);
+      if (payload.maxPeople < countJoinedUsers) {
+        throw new BadRequestException(
+          '최대 참여 인원은 현재 참여한 인원보다 적게 설정할 수 없습니다.',
+        );
+      }
+    }
+
+    const updatedEvent = await this.eventRepository.updateEvent(
+      eventId,
+      payload,
+    );
+
+    return EventDetailDto.from(updatedEvent);
   }
 }
