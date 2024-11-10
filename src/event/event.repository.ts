@@ -49,12 +49,6 @@ export class EventRepository {
     });
   }
 
-  async getJoinedUsers(eventId: number): Promise<User[]> {
-    return this.prisma.user.findMany({
-      where: { eventJoin: { every: { eventId } } },
-    });
-  }
-
   async getReviews(eventId: number): Promise<ReviewData[]> {
     return this.prisma.review.findMany({
       where: { eventId },
@@ -139,17 +133,17 @@ export class EventRepository {
         cityId: query.cityId,
         categoryId: query.categoryId,
       },
-      // select: {
-      //   id: true,
-      //   hostId: true,
-      //   title: true,
-      //   description: true,
-      //   categoryId: true,
-      //   cityId: true,
-      //   startTime: true,
-      //   endTime: true,
-      //   maxPeople: true,
-      // },
+      select: {
+        id: true,
+        hostId: true,
+        title: true,
+        description: true,
+        categoryId: true,
+        cityId: true,
+        startTime: true,
+        endTime: true,
+        maxPeople: true,
+      },
     });
   }
 

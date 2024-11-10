@@ -60,7 +60,7 @@ export class EventService {
 
     const event = await this.eventRepository.createEvent(createData);
 
-    return EventDetailDto.from({ ...event });
+    return EventDetailDto.from(event);
   }
 
   async getEventById(eventId: number): Promise<EventDetailDto> {
@@ -70,7 +70,7 @@ export class EventService {
       throw new NotFoundException('Event가 존재하지 않습니다.');
     }
 
-    return EventDetailDto.from({ ...event });
+    return EventDetailDto.from(event);
   }
 
   async getEvents(query: EventQuery): Promise<EventListDto> {
