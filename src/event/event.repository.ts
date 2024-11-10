@@ -5,6 +5,7 @@ import { EventData } from './type/event-data.type';
 import { User } from '@prisma/client';
 import { EventQuery } from './query/event.query';
 import { EventDetailData } from './type/event-detail-data.type';
+import { UpdateEventPayload } from './payload/update-event.payload';
 
 @Injectable()
 export class EventRepository {
@@ -21,7 +22,11 @@ export class EventRepository {
         startTime: data.startTime,
         endTime: data.endTime,
         maxPeople: data.maxPeople,
-        eventJoin: { create: { userId: data.hostId } },
+        eventJoin: {
+          create: {
+            userId: data.hostId,
+          },
+        },
       },
       select: {
         id: true,
@@ -105,7 +110,16 @@ export class EventRepository {
         startTime: true,
         endTime: true,
         maxPeople: true,
-        eventJoin: { select: { user: { select: { id: true, name: true } } } },
+        eventJoin: {
+          select: {
+            user: {
+              select: {
+                id: true,
+                name: true,
+              },
+            },
+          },
+        },
         review: {
           select: {
             id: true,
@@ -159,24 +173,64 @@ export class EventRepository {
 
   async countJoinedUsers(eventId: number): Promise<number> {
     const countJoinedUsers = await this.prisma.eventJoin.count({
-      where: { eventId, user: { deletedAt: null } },
+      where: {
+        eventId,
+        user: {
+          deletedAt: null,
+        },
+      },
     });
 
     return countJoinedUsers;
   }
 
-  async outUserFromEvent({
-    eventId,
-    userId,
-  }: {
-    eventId: number;
-    userId: number;
-  }): Promise<void> {
+  async outUserFromEvent(eventId: number, userId: number): Promise<void> {
     await this.prisma.eventJoin.delete({
       where: {
         eventId_userId: {
           eventId,
           userId,
+        },
+      },
+    });
+  }
+
+  async updateEvent(
+    eventId: number,
+    payload: UpdateEventPayload,
+  ): Promise<EventDetailData> {
+    return this.prisma.event.update({
+      where: { id: eventId },
+      data: payload,
+      select: {
+        id: true,
+        hostId: true,
+        title: true,
+        description: true,
+        categoryId: true,
+        cityId: true,
+        startTime: true,
+        endTime: true,
+        maxPeople: true,
+        eventJoin: {
+          select: {
+            user: {
+              select: {
+                id: true,
+                name: true,
+              },
+            },
+          },
+        },
+        review: {
+          select: {
+            id: true,
+            eventId: true,
+            userId: true,
+            score: true,
+            title: true,
+            description: true,
+          },
         },
       },
     });
