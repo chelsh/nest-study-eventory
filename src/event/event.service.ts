@@ -10,7 +10,6 @@ import { EventListDto } from './dto/event.dto';
 import { CreateEventData } from './type/create-event-data.type';
 import { EventQuery } from './query/event.query';
 import { EventDetailDto } from './dto/event-detail.dto';
-import { EventStatus } from './enum/event-status.enum';
 
 @Injectable()
 export class EventService {
@@ -61,22 +60,7 @@ export class EventService {
 
     const event = await this.eventRepository.createEvent(createData);
 
-    const status =
-      new Date() < event.startTime
-        ? EventStatus.PENDING
-        : event.endTime < new Date()
-          ? EventStatus.COMPLETED
-          : EventStatus.ONGOING;
-
-    const joinedUsers = (
-      await this.eventRepository.getJoinedUsers(event.id)
-    ).map((user) => {
-      return { id: user.id, name: user.name };
-    });
-
-    const reviews = await this.eventRepository.getReviews(event.id);
-
-    return EventDetailDto.from({ ...event, status, joinedUsers, reviews });
+    return EventDetailDto.from({ ...event });
   }
 
   async getEventById(eventId: number): Promise<EventDetailDto> {
@@ -86,22 +70,7 @@ export class EventService {
       throw new NotFoundException('Event가 존재하지 않습니다.');
     }
 
-    const status =
-      new Date() < event.startTime
-        ? EventStatus.PENDING
-        : event.endTime < new Date()
-          ? EventStatus.COMPLETED
-          : EventStatus.ONGOING;
-
-    const joinedUsers = (
-      await this.eventRepository.getJoinedUsers(event.id)
-    ).map((user) => {
-      return { id: user.id, name: user.name };
-    });
-
-    const reviews = await this.eventRepository.getReviews(event.id);
-
-    return EventDetailDto.from({ ...event, status, joinedUsers, reviews });
+    return EventDetailDto.from({ ...event });
   }
 
   async getEvents(query: EventQuery): Promise<EventListDto> {

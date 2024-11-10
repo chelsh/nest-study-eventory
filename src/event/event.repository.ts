@@ -5,12 +5,13 @@ import { EventData } from './type/event-data.type';
 import { User } from '@prisma/client';
 import { EventQuery } from './query/event.query';
 import { ReviewData } from 'src/review/type/review-data.type';
+import { EventDetailData } from './type/event-detail-data.type';
 
 @Injectable()
 export class EventRepository {
   constructor(private readonly prisma: PrismaService) {}
 
-  async createEvent(data: CreateEventData): Promise<EventData> {
+  async createEvent(data: CreateEventData): Promise<EventDetailData> {
     return this.prisma.event.create({
       data: {
         hostId: data.hostId,
@@ -22,6 +23,28 @@ export class EventRepository {
         endTime: data.endTime,
         maxPeople: data.maxPeople,
         eventJoin: { create: { userId: data.hostId } },
+      },
+      select: {
+        id: true,
+        hostId: true,
+        title: true,
+        description: true,
+        categoryId: true,
+        cityId: true,
+        startTime: true,
+        endTime: true,
+        maxPeople: true,
+        eventJoin: { select: { user: { select: { id: true, name: true } } } },
+        review: {
+          select: {
+            id: true,
+            eventId: true,
+            userId: true,
+            score: true,
+            title: true,
+            description: true,
+          },
+        },
       },
     });
   }
@@ -81,7 +104,7 @@ export class EventRepository {
     });
   }
 
-  async getEventById(eventId: number): Promise<EventData | null> {
+  async getEventById(eventId: number): Promise<EventDetailData | null> {
     return this.prisma.event.findUnique({
       where: { id: eventId },
       select: {
@@ -94,6 +117,17 @@ export class EventRepository {
         startTime: true,
         endTime: true,
         maxPeople: true,
+        eventJoin: { select: { user: { select: { id: true, name: true } } } },
+        review: {
+          select: {
+            id: true,
+            eventId: true,
+            userId: true,
+            score: true,
+            title: true,
+            description: true,
+          },
+        },
       },
     });
   }
@@ -105,17 +139,17 @@ export class EventRepository {
         cityId: query.cityId,
         categoryId: query.categoryId,
       },
-      select: {
-        id: true,
-        hostId: true,
-        title: true,
-        description: true,
-        categoryId: true,
-        cityId: true,
-        startTime: true,
-        endTime: true,
-        maxPeople: true,
-      },
+      // select: {
+      //   id: true,
+      //   hostId: true,
+      //   title: true,
+      //   description: true,
+      //   categoryId: true,
+      //   cityId: true,
+      //   startTime: true,
+      //   endTime: true,
+      //   maxPeople: true,
+      // },
     });
   }
 

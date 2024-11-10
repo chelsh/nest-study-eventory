@@ -101,11 +101,16 @@ export class EventDetailDto {
       startTime: event.startTime,
       endTime: event.endTime,
       maxPeople: event.maxPeople,
-      status: event.status,
-      joinedUsers: event.joinedUsers.map((user) => {
-        return { id: user.id, name: user.name };
+      status:
+        new Date() < event.startTime
+          ? EventStatus.PENDING
+          : event.endTime < new Date()
+            ? EventStatus.COMPLETED
+            : EventStatus.ONGOING,
+      joinedUsers: event.eventJoin.map((eventJoin) => {
+        return { id: eventJoin.user.id, name: eventJoin.user.name };
       }),
-      reviews: event.reviews.map((review) => {
+      reviews: event.review.map((review) => {
         return {
           id: review.id,
           userId: review.userId,
