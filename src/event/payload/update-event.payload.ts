@@ -1,10 +1,18 @@
 import { ApiProperty } from '@nestjs/swagger';
 import { Type } from 'class-transformer';
-import { IsDate, IsInt, IsOptional, IsString, Min } from 'class-validator';
+import {
+  IsDate,
+  IsInt,
+  IsString,
+  Min,
+  NotEquals,
+  ValidateIf,
+} from 'class-validator';
 
 export class UpdateEventPayload {
   @IsString()
-  @IsOptional()
+  @NotEquals(null)
+  @ValidateIf((object, value) => value !== undefined)
   @ApiProperty({
     description: '이벤트 이름',
     type: String,
@@ -12,7 +20,8 @@ export class UpdateEventPayload {
   title?: string;
 
   @IsString()
-  @IsOptional()
+  @NotEquals(null)
+  @ValidateIf((object, value) => value !== undefined)
   @ApiProperty({
     description: '이벤트 설명',
     type: String,
@@ -20,7 +29,8 @@ export class UpdateEventPayload {
   description?: string;
 
   @IsInt()
-  @IsOptional()
+  @NotEquals(null)
+  @ValidateIf((object, value) => value !== undefined)
   @ApiProperty({
     description: '이벤트가 속한 카테고리 ID',
     type: Number,
@@ -28,7 +38,8 @@ export class UpdateEventPayload {
   categoryId?: number;
 
   @IsInt()
-  @IsOptional()
+  @NotEquals(null)
+  @ValidateIf((object, value) => value !== undefined)
   @ApiProperty({
     description: '이벤트 도시 ID',
     type: Number,
@@ -37,7 +48,8 @@ export class UpdateEventPayload {
 
   @Type(() => Date)
   @IsDate()
-  @IsOptional()
+  @NotEquals(null)
+  @ValidateIf((object, value) => value !== undefined)
   @ApiProperty({
     description: '이벤트 시작 시간',
     type: Date,
@@ -46,7 +58,8 @@ export class UpdateEventPayload {
 
   @Type(() => Date)
   @IsDate()
-  @IsOptional()
+  @NotEquals(null)
+  @ValidateIf((object, value) => value !== undefined)
   @ApiProperty({
     description: '이벤트 종료 시간',
     type: Date,
@@ -55,7 +68,8 @@ export class UpdateEventPayload {
 
   @Min(2) //모임은 두 명 이상(호스트 포함)
   @IsInt()
-  @IsOptional()
+  @NotEquals(null)
+  @ValidateIf((object, value) => value !== undefined)
   @ApiProperty({
     description: '이벤트에 참여가능한 최대 인원',
     type: Number,
