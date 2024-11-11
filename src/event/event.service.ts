@@ -172,6 +172,12 @@ export class EventService {
       }
     }
 
+    if (event.startTime < new Date()) {
+      throw new BadRequestException(
+        '이미 시작된 event는 수정할 수 없습니다.(진행 중이거나 종료됨)',
+      );
+    }
+
     const startTime = payload.startTime ? payload.startTime : event.startTime;
     const endTime = payload.endTime ? payload.endTime : event.endTime;
     if (startTime < new Date()) {
