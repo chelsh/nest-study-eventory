@@ -168,6 +168,7 @@ export class EventRepository {
         user: {
           deletedAt: null,
         },
+        deletedAt: null,
       },
     });
 
@@ -181,6 +182,7 @@ export class EventRepository {
         user: {
           deletedAt: null,
         },
+        deletedAt: null,
       },
     });
 
@@ -188,13 +190,14 @@ export class EventRepository {
   }
 
   async outUserFromEvent(eventId: number, userId: number): Promise<void> {
-    await this.prisma.eventJoin.delete({
+    await this.prisma.eventJoin.update({
       where: {
         eventId_userId: {
           eventId,
           userId,
         },
       },
+      data: { deletedAt: new Date() },
     });
   }
 

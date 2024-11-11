@@ -43,6 +43,7 @@ export class ReviewRepository {
     return this.prisma.event.findUnique({
       where: {
         id: eventId,
+        deletedAt: null,
       },
     });
   }
@@ -57,6 +58,7 @@ export class ReviewRepository {
         user: {
           deletedAt: null,
         },
+        deletedAt: null,
       },
     });
 
@@ -73,6 +75,7 @@ export class ReviewRepository {
         user: {
           deletedAt: null,
         },
+        deletedAt: null,
       },
     });
 
@@ -83,6 +86,7 @@ export class ReviewRepository {
     return this.prisma.review.findUnique({
       where: {
         id: reviewId,
+        deletedAt: null,
       },
       select: {
         id: true,
@@ -103,6 +107,7 @@ export class ReviewRepository {
           deletedAt: null,
           id: query.userId,
         },
+        deletedAt: null,
       },
       select: {
         id: true,
@@ -140,9 +145,12 @@ export class ReviewRepository {
   }
 
   async deleteReview(reviewId: number): Promise<void> {
-    await this.prisma.review.delete({
+    await this.prisma.review.update({
       where: {
         id: reviewId,
+      },
+      data: {
+        deletedAt: null,
       },
     });
   }
