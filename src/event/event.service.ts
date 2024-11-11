@@ -206,4 +206,17 @@ export class EventService {
 
     return EventDetailDto.from(updatedEvent);
   }
+
+  async deleteEvent(eventId: number): Promise<void> {
+    const event = await this.eventRepository.getEventById(eventId);
+    if (!event) {
+      throw new NotFoundException('Event가 존재하지 않습니다.');
+    }
+
+    if (event.startTime < new Date()) {
+      throw new BadRequestException('이미 시작된 event는 삭제할 수 없습니다.');
+    }
+
+    return this.eventRepository.deleteEvent(eventId);
+  }
 }

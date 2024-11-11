@@ -9,6 +9,7 @@ import { EventService } from './event.service';
 import {
   Body,
   Controller,
+  Delete,
   Get,
   HttpCode,
   Param,
@@ -87,5 +88,15 @@ export class EventController {
     @Body() payload: UpdateEventPayload,
   ): Promise<EventDetailDto> {
     return this.eventService.updateEvent(eventId, payload);
+  }
+
+  @Delete(':eventId')
+  @HttpCode(204)
+  @ApiOperation({ summary: '이벤트를 삭제합니다.' })
+  @ApiNoContentResponse()
+  async deleteEvent(
+    @Param('eventId', ParseIntPipe) eventId: number,
+  ): Promise<void> {
+    return this.eventService.deleteEvent(eventId);
   }
 }
