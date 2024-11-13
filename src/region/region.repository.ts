@@ -8,7 +8,6 @@ export class RegionRepository {
 
   async findAllRegions(): Promise<RegionData[]> {
     return this.prisma.region.findMany({
-      where: { deletedAt: null },
       select: {
         id: true,
         name: true,

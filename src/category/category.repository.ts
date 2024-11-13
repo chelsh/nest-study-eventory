@@ -8,7 +8,6 @@ export class CategoryRepository {
 
   async getCategories(): Promise<CategoryData[]> {
     return this.prisma.category.findMany({
-      where: { deletedAt: null },
       select: {
         id: true,
         name: true,
