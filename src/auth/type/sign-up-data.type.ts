@@ -3,6 +3,5 @@ export type SignUpData = {
   password: string;
   name: string;
   birthday?: Date | null;
-  categoryId: number;
   cityId?: number | null;
 };
