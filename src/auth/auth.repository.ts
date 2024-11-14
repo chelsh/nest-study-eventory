@@ -25,6 +25,7 @@ export class AuthRepository {
         name: true,
         birthday: true,
         cityId: true,
+        refreshToken: true,
       },
     });
   }
@@ -40,6 +41,7 @@ export class AuthRepository {
         name: data.name,
         birthday: data.birthday,
         cityId: data.cityId,
+        refreshToken: data.refreshToken,
       },
       select: {
         id: true,
@@ -48,6 +50,7 @@ export class AuthRepository {
         name: true,
         birthday: true,
         cityId: true,
+        refreshToken: true,
       },
     });
   }
@@ -65,6 +68,7 @@ export class AuthRepository {
         name: true,
         birthday: true,
         cityId: true,
+        refreshToken: true,
       },
     });
   }
@@ -82,6 +86,7 @@ export class AuthRepository {
         name: true,
         birthday: true,
         cityId: true,
+        refreshToken: true,
       },
     });
   }

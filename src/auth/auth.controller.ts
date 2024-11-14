@@ -1,4 +1,4 @@
-import { Body, Controller, HttpCode, Post, Res } from '@nestjs/common';
+import { Body, Controller, HttpCode, Post, Req, Res } from '@nestjs/common';
 import { AuthService } from './auth.service';
 import {
   ApiCreatedResponse,
@@ -9,6 +9,7 @@ import {
 import { TokenDto } from './dto/token.dto';
 import { SignUpPayload } from './payload/sign-up.payload';
 import { LoginPayload } from './payload/login.payload';
+import { Request, Response } from 'express';
 
 @Controller('auth')
 @ApiTags('Auth API')
@@ -45,6 +46,28 @@ export class AuthController {
     @Res({ passthrough: true }) res: Response,
   ): Promise<TokenDto> {
     const tokens = await this.authService.login(payload);
+
+    // refresh Token은 쿠키로
+    res.cookie('refreshToken', tokens.refreshToken, {
+      httpOnly: true,
+      secure: true,
+      sameSite: 'strict',
+      // 이후 실제 도메인으로 변경
+      domain: 'localhost',
+    });
+
+    return TokenDto.from(tokens.accessToken);
+  }
+
+  @Post('refresh')
+  @HttpCode(200)
+  @ApiOperation({ summary: '토큰 갱신' })
+  @ApiOkResponse({ type: TokenDto })
+  async refresh(
+    @Req() req: Request,
+    @Res({ passthrough: true }) res: Response,
+  ): Promise<TokenDto> {
+    const tokens = await this.authService.refresh(req.cookies['refreshToken']);
 
     // refresh Token은 쿠키로
     res.cookie('refreshToken', tokens.refreshToken, {

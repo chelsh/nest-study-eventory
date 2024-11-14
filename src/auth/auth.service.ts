@@ -2,6 +2,7 @@ import {
   ConflictException,
   Injectable,
   NotFoundException,
+  UnauthorizedException,
 } from '@nestjs/common';
 import { AuthRepository } from './auth.repository';
 import { SignUpData } from './type/sign-up-data.type';
@@ -73,6 +74,21 @@ export class AuthService {
 
     if (!isPasswordMatch) {
       throw new ConflictException('비밀번호가 일치하지 않습니다.');
+    }
+
+    return this.generateTokens(user.id);
+  }
+
+  async refresh(refreshToken: string): Promise<Tokens> {
+    const data = this.tokenService.verifyRefreshToken(refreshToken);
+
+    const user = await this.authRepository.getUserById(data.userId);
+    if (!user) {
+      throw new NotFoundException('존재하지 않는 사용자입니다.');
+    }
+
+    if (user.refreshToken !== refreshToken) {
+      throw new UnauthorizedException('유효하지 않은 토큰입니다.');
     }
 
     return this.generateTokens(user.id);
