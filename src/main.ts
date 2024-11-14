@@ -26,6 +26,7 @@ async function bootstrap() {
     .setDescription('Eventory API description')
     .setVersion('1.0')
     .addTag('Eventory')
+    .addBearerAuth()
     .build();
 
   const document = SwaggerModule.createDocument(app, config);
