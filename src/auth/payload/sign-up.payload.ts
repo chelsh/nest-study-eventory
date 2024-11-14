@@ -42,11 +42,4 @@ export class SignUpPayload {
     nullable: true,
   })
   cityId?: number | null;
-
-  @IsInt()
-  @ApiProperty({
-    description: '카테고리 ID',
-    type: Number,
-  })
-  categoryId!: number;
 }

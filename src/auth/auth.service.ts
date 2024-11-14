@@ -42,7 +42,6 @@ export class AuthService {
       password: hashedPassword,
       name: payload.name,
       birthday: payload.birthday,
-      categoryId: payload.categoryId,
       cityId: payload.cityId,
     };
 

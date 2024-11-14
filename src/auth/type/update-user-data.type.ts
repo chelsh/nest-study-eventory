@@ -3,7 +3,6 @@ export type UpdateUserData = {
   password?: string;
   name?: string;
   birthday?: Date | null;
-  categoryId?: number;
   cityId?: number | null;
   refreshToken?: string | null;
 };
