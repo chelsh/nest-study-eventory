@@ -75,7 +75,6 @@ export class EventRepository {
     const category = await this.prisma.category.findUnique({
       where: {
         id: categoryId,
-        deletedAt: null,
       },
     });
 
@@ -86,7 +85,6 @@ export class EventRepository {
     const city = await this.prisma.city.findUnique({
       where: {
         id: cityId,
-        deletedAt: null,
       },
     });
 
@@ -101,7 +99,7 @@ export class EventRepository {
 
   async getEventById(eventId: number): Promise<EventDetailData | null> {
     return this.prisma.event.findUnique({
-      where: { id: eventId, deletedAt: null },
+      where: { id: eventId },
       select: {
         id: true,
         hostId: true,
@@ -142,7 +140,6 @@ export class EventRepository {
         hostId: query.hostId,
         cityId: query.cityId,
         categoryId: query.categoryId,
-        deletedAt: null,
       },
       select: {
         id: true,
@@ -240,9 +237,8 @@ export class EventRepository {
   }
 
   async deleteEvent(eventId: number): Promise<void> {
-    await this.prisma.event.update({
+    await this.prisma.event.delete({
       where: { id: eventId },
-      data: { deletedAt: new Date() },
     });
   }
 }
