@@ -19,6 +19,7 @@ async function bootstrap() {
 
   app.useGlobalFilters(new HttpExceptionFilter());
   app.enableCors();
+  app.use(cookieParser());
 
   // swagger 세팅
   const config = new DocumentBuilder()
