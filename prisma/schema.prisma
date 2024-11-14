@@ -64,8 +64,23 @@ model Event {
 
   eventJoin EventJoin[]
   review    Review[]
+  EventCity EventCity[]
 
   @@map("event")
+}
+
+model EventCity {
+  id        Int      @id @default(autoincrement())
+  eventId   Int
+  cityId    Int
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  event Event @relation(fields: [eventId], references: [id])
+  city  City  @relation(fields: [cityId], references: [id])
+
+  @@unique([eventId, cityId])
+  @@map("event_city")
 }
 
 model EventJoin {
@@ -120,7 +135,8 @@ model City {
   event Event[]
   user  User[]
 
-  region Region @relation(fields: [regionId], references: [id])
+  region    Region      @relation(fields: [regionId], references: [id])
+  EventCity EventCity[]
 
   @@map("city")
 }
