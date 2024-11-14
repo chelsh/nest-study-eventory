@@ -5,4 +5,5 @@ export type UserBaseInfo = {
   name: string;
   birthday: Date | null;
   cityId: number | null;
+  refreshToken: string | null;
 };
