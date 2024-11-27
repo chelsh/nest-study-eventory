@@ -1,7 +1,18 @@
-import { Body, Controller, HttpCode, Post, Req, Res } from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  HttpCode,
+  Post,
+  Put,
+  Req,
+  Res,
+  UseGuards,
+} from '@nestjs/common';
 import { AuthService } from './auth.service';
 import {
+  ApiBearerAuth,
   ApiCreatedResponse,
+  ApiNoContentResponse,
   ApiOkResponse,
   ApiOperation,
   ApiTags,
@@ -10,6 +21,10 @@ import { TokenDto } from './dto/token.dto';
 import { SignUpPayload } from './payload/sign-up.payload';
 import { LoginPayload } from './payload/login.payload';
 import { Request, Response } from 'express';
+import { UserBaseInfo } from './type/user-base-info.type';
+import { ChangePasswordPayload } from './payload/change-password.payload';
+import { CurrentUser } from './decorator/user.decorator';
+import { JwtAuthGuard } from './guard/jwt-auth.guard';
 
 @Controller('auth')
 @ApiTags('Auth API')
@@ -79,5 +94,18 @@ export class AuthController {
     });
 
     return TokenDto.from(tokens.accessToken);
+  }
+
+  @Put('password')
+  @UseGuards(JwtAuthGuard)
+  @ApiBearerAuth()
+  @HttpCode(204)
+  @ApiOperation({ summary: '비밀번호를 변경합니다.' })
+  @ApiNoContentResponse()
+  async changePassword(
+    @CurrentUser() user: UserBaseInfo,
+    @Body() payload: ChangePasswordPayload,
+  ): Promise<void> {
+    return this.authService.changePassword(user, payload);
   }
 }
