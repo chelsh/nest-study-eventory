@@ -11,6 +11,8 @@ import { Tokens } from './type/tokens.type';
 import { TokenService } from './token.service';
 import { BcryptPasswordService } from './bcrypt-password.service';
 import { LoginPayload } from './payload/login.payload';
+import { ChangePasswordPayload } from './payload/change-password.payload';
+import { UserBaseInfo } from './type/user-base-info.type';
 
 @Injectable()
 export class AuthService {
@@ -91,5 +93,27 @@ export class AuthService {
     }
 
     return this.generateTokens(user.id);
+  }
+
+  async changePassword(
+    user: UserBaseInfo,
+    payload: ChangePasswordPayload,
+  ): Promise<void> {
+    const isPasswordMatch = await this.passwordService.validatePassword(
+      payload.previousPassword,
+      user.password,
+    );
+
+    if (!isPasswordMatch) {
+      throw new ConflictException('비밀번호가 일치하지 않습니다.');
+    }
+
+    const hashedPassword = await this.passwordService.getEncryptPassword(
+      payload.previousPassword,
+    );
+
+    await this.authRepository.updateUser(user.id, {
+      password: hashedPassword,
+    });
   }
 }
