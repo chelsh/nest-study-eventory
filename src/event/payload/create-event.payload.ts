@@ -3,13 +3,6 @@ import { Type } from 'class-transformer';
 import { IsDate, IsInt, IsString, Min } from 'class-validator';
 
 export class CreateEventPayload {
-  @IsInt()
-  @ApiProperty({
-    description: '호스트 ID',
-    type: Number,
-  })
-  hostId!: number;
-
   @IsString()
   @ApiProperty({
     description: '이벤트 이름',
