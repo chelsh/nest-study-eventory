@@ -24,9 +24,10 @@ export class TokenService {
         secret: this.configService.get<string>('JWT_ACCESS_TOKEN_SECRET'),
       });
 
-      const { iat, exp, ...result } = data;  //eslint-disable-line
+      const { iat, exp, ...result } = data; //eslint-disable-line
       return result;
-    } catch (e) {  //eslint-disable-line
+    } catch (e) {
+      //eslint-disable-line
       throw new UnauthorizedException('토큰이 유효하지 않습니다.');
     }
   }
@@ -37,9 +38,10 @@ export class TokenService {
         secret: this.configService.get<string>('JWT_REFRESH_TOKEN_SECRET'),
       });
 
-      const { iat, exp, ...result } = data;  //eslint-disable-line
+      const { iat, exp, ...result } = data; //eslint-disable-line
       return result;
-    } catch (e) {  //eslint-disable-line
+    } catch (e) {
+      //eslint-disable-line
       throw new UnauthorizedException('토큰이 유효하지 않습니다.');
     }
   }
