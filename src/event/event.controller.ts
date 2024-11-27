@@ -1,4 +1,5 @@
 import {
+  ApiBearerAuth,
   ApiCreatedResponse,
   ApiNoContentResponse,
   ApiOkResponse,
@@ -17,13 +18,16 @@ import {
   Patch,
   Post,
   Query,
+  UseGuards,
 } from '@nestjs/common';
 import { EventListDto } from './dto/event.dto';
 import { CreateEventPayload } from './payload/create-event.payload';
 import { EventQuery } from './query/event.query';
-import { EventJoinOutPayload } from './payload/event-join-out.payload';
 import { EventDetailDto } from './dto/event-detail.dto';
 import { UpdateEventPayload } from './payload/update-event.payload';
+import { JwtAuthGuard } from 'src/auth/guard/jwt-auth.guard';
+import { UserBaseInfo } from 'src/auth/type/user-base-info.type';
+import { CurrentUser } from 'src/auth/decorator/user.decorator';
 
 @Controller('events')
 @ApiTags('Event API')
@@ -31,12 +35,15 @@ export class EventController {
   constructor(private readonly eventService: EventService) {}
 
   @Post()
+  @UseGuards(JwtAuthGuard)
+  @ApiBearerAuth()
   @ApiOperation({ summary: '이벤트를 생성합니다' })
   @ApiCreatedResponse({ type: EventDetailDto })
   async createEvent(
+    @CurrentUser() user: UserBaseInfo,
     @Body() payload: CreateEventPayload,
   ): Promise<EventDetailDto> {
-    return this.eventService.createEvent(payload);
+    return this.eventService.createEvent(user.id, payload);
   }
 
   @Get(':eventId')
@@ -59,44 +66,54 @@ export class EventController {
   }
 
   @Post(':eventId/join')
+  @UseGuards(JwtAuthGuard)
+  @ApiBearerAuth()
   @HttpCode(204)
   @ApiOperation({ summary: 'user가 이벤트에 참여합니다.' })
   @ApiNoContentResponse()
   async joinEvent(
+    @CurrentUser() user: UserBaseInfo,
     @Param('eventId', ParseIntPipe) eventId: number,
-    @Body() payload: EventJoinOutPayload,
   ): Promise<void> {
-    return this.eventService.joinEvent(eventId, payload.userId);
+    return this.eventService.joinEvent(eventId, user.id);
   }
 
   @Post(':eventId/out')
+  @UseGuards(JwtAuthGuard)
+  @ApiBearerAuth()
   @HttpCode(204)
   @ApiOperation({ summary: 'user가 이벤트에서 나갑니다.' })
   @ApiNoContentResponse()
   async outEvent(
+    @CurrentUser() user: UserBaseInfo,
     @Param('eventId', ParseIntPipe) eventId: number,
-    @Body() payload: EventJoinOutPayload,
   ): Promise<void> {
-    return this.eventService.outEvent(eventId, payload.userId);
+    return this.eventService.outEvent(eventId, user.id);
   }
 
   @Patch(':eventId')
+  @UseGuards(JwtAuthGuard)
+  @ApiBearerAuth()
   @ApiOperation({ summary: '이벤트를 수정합니다.' })
   @ApiOkResponse({ type: EventDetailDto })
   async updateEvent(
+    @CurrentUser() user: UserBaseInfo,
     @Param('eventId', ParseIntPipe) eventId: number,
     @Body() payload: UpdateEventPayload,
   ): Promise<EventDetailDto> {
-    return this.eventService.updateEvent(eventId, payload);
+    return this.eventService.updateEvent(eventId, payload, user.id);
   }
 
   @Delete(':eventId')
+  @UseGuards(JwtAuthGuard)
+  @ApiBearerAuth()
   @HttpCode(204)
   @ApiOperation({ summary: '이벤트를 삭제합니다.' })
   @ApiNoContentResponse()
   async deleteEvent(
+    @CurrentUser() user: UserBaseInfo,
     @Param('eventId', ParseIntPipe) eventId: number,
   ): Promise<void> {
-    return this.eventService.deleteEvent(eventId);
+    return this.eventService.deleteEvent(eventId, user.id);
   }
 }
