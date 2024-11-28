@@ -1,4 +1,9 @@
-import { ForbiddenException, Injectable } from '@nestjs/common';
+import {
+  ConflictException,
+  ForbiddenException,
+  Injectable,
+  NotFoundException,
+} from '@nestjs/common';
 import { UserRepository } from './user.repository';
 import { UserBaseInfo } from 'src/auth/type/user-base-info.type';
 import { UpdateUserPayload } from './payload/update-user.payload';
@@ -19,6 +24,23 @@ export class UserService {
   ): Promise<UserDto> {
     if (user.id !== userId) {
       throw new ForbiddenException('본인의 유저 정보만 수정할 수 있습니다.');
+    }
+
+    if (payload.email) {
+      const isEmailUsed = await this.userRepository.getUserByEmail(
+        payload.email,
+      );
+      if (isEmailUsed) {
+        throw new ConflictException('이미 사용중인 이메일입니다.');
+      }
+    }
+
+    if (payload.cityId) {
+      const cityExist = await this.userRepository.cityExist(payload.cityId);
+
+      if (!cityExist) {
+        throw new NotFoundException('해당 도시가 존재하지 않습니다.');
+      }
     }
 
     const updatedUser = await this.userRepository.updateUser(userId, payload);
