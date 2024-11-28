@@ -12,6 +12,7 @@ import { CreateEventData } from './type/create-event-data.type';
 import { EventQuery } from './query/event.query';
 import { EventDetailDto } from './dto/event-detail.dto';
 import { UpdateEventPayload } from './payload/update-event.payload';
+import { UpdateEventData } from './type/update-event-data.type';
 
 @Injectable()
 export class EventService {
@@ -193,9 +194,19 @@ export class EventService {
       }
     }
 
+    const updateEventData: UpdateEventData = {
+      title: payload.title,
+      description: payload.description,
+      categoryId: payload.categoryId,
+      cityId: payload.cityId,
+      startTime: payload.startTime,
+      endTime: payload.endTime,
+      maxPeople: payload.maxPeople,
+    };
+
     const updatedEvent = await this.eventRepository.updateEvent(
       eventId,
-      payload,
+      updateEventData,
     );
 
     return EventDetailDto.from(updatedEvent);

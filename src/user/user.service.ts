@@ -8,6 +8,7 @@ import { UserRepository } from './user.repository';
 import { UserBaseInfo } from 'src/auth/type/user-base-info.type';
 import { UpdateUserPayload } from './payload/update-user.payload';
 import { UserDto } from './dto/user.dto';
+import { UpdateUserData } from './type/update-user-data.type';
 
 @Injectable()
 export class UserService {
@@ -43,7 +44,17 @@ export class UserService {
       }
     }
 
-    const updatedUser = await this.userRepository.updateUser(userId, payload);
+    const updateUserData: UpdateUserData = {
+      email: payload.email,
+      name: payload.name,
+      birthday: payload.birthday,
+      cityId: payload.cityId,
+    };
+
+    const updatedUser = await this.userRepository.updateUser(
+      userId,
+      updateUserData,
+    );
 
     return UserDto.from(updatedUser);
   }

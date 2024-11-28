@@ -1,8 +1,8 @@
 import { PrismaService } from '../common/services/prisma.service';
 import { Injectable } from '@nestjs/common';
 import { User } from '@prisma/client';
-import { UpdateUserPayload } from './payload/update-user.payload';
 import { UserData } from './type/user-data.type';
+import { UpdateUserData } from './type/update-user-data.type';
 
 @Injectable()
 export class UserRepository {
@@ -37,15 +37,12 @@ export class UserRepository {
     });
   }
 
-  async updateUser(
-    userId: number,
-    payload: UpdateUserPayload,
-  ): Promise<UserData> {
+  async updateUser(userId: number, data: UpdateUserData): Promise<UserData> {
     return this.prisma.user.update({
       where: {
         id: userId,
       },
-      data: payload,
+      data: data,
       select: {
         id: true,
         email: true,
