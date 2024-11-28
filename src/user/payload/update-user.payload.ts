@@ -35,7 +35,7 @@ export class UpdateUserPayload {
     description: '유저 생년월일',
     type: Date,
   })
-  birthday?: Date;
+  birthday?: Date | null;
 
   @IsInt()
   @IsOptional()
@@ -43,5 +43,5 @@ export class UpdateUserPayload {
     description: '유저가 속한 도시 ID',
     type: Number,
   })
-  cityId?: number;
+  cityId?: number | null;
 }
