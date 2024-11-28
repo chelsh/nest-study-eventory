@@ -228,4 +228,10 @@ export class EventService {
 
     return this.eventRepository.deleteEvent(eventId);
   }
+
+  async getMyEvents(userId: number): Promise<EventListDto> {
+    const myEvents = await this.eventRepository.getMyEvents(userId);
+
+    return EventListDto.from(myEvents);
+  }
 }

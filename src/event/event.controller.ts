@@ -116,4 +116,13 @@ export class EventController {
   ): Promise<void> {
     return this.eventService.deleteEvent(eventId, user.id);
   }
+
+  @Get('me')
+  @UseGuards(JwtAuthGuard)
+  @ApiBearerAuth()
+  @ApiOperation({ summary: '이벤트를 삭제합니다.' })
+  @ApiOkResponse({ type: EventListDto })
+  async getMyEvents(@CurrentUser() user: UserBaseInfo): Promise<EventListDto> {
+    return this.eventService.getMyEvents(user.id);
+  }
 }

@@ -241,4 +241,27 @@ export class EventRepository {
       where: { id: eventId },
     });
   }
+
+  async getMyEvents(userId: number): Promise<EventData[]> {
+    return this.prisma.event.findMany({
+      where: {
+        eventJoin: {
+          some: {
+            userId,
+          },
+        },
+      },
+      select: {
+        id: true,
+        hostId: true,
+        title: true,
+        description: true,
+        categoryId: true,
+        cityId: true,
+        startTime: true,
+        endTime: true,
+        maxPeople: true,
+      },
+    });
+  }
 }
