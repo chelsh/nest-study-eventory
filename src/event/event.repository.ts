@@ -5,7 +5,7 @@ import { EventData } from './type/event-data.type';
 import { User } from '@prisma/client';
 import { EventQuery } from './query/event.query';
 import { EventDetailData } from './type/event-detail-data.type';
-import { UpdateEventPayload } from './payload/update-event.payload';
+import { UpdateEventData } from './type/update-event-data.type';
 
 @Injectable()
 export class EventRepository {
@@ -197,11 +197,11 @@ export class EventRepository {
 
   async updateEvent(
     eventId: number,
-    payload: UpdateEventPayload,
+    data: UpdateEventData,
   ): Promise<EventDetailData> {
     return this.prisma.event.update({
       where: { id: eventId },
-      data: payload,
+      data: data,
       select: {
         id: true,
         hostId: true,
