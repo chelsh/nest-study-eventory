@@ -1,6 +1,5 @@
 import { PrismaService } from '../common/services/prisma.service';
 import { Injectable } from '@nestjs/common';
-import { User } from '@prisma/client';
 import { UserData } from './type/user-data.type';
 import { UpdateUserData } from './type/update-user-data.type';
 
@@ -8,20 +7,34 @@ import { UpdateUserData } from './type/update-user-data.type';
 export class UserRepository {
   constructor(private readonly prisma: PrismaService) {}
 
-  async getUserById(userId: number): Promise<User | null> {
+  async getUserById(userId: number): Promise<UserData | null> {
     return this.prisma.user.findFirst({
       where: {
         id: userId,
         deletedAt: null,
       },
+      select: {
+        id: true,
+        email: true,
+        name: true,
+        birthday: true,
+        cityId: true,
+      },
     });
   }
 
-  async getUserByEmail(email: string): Promise<User | null> {
+  async getUserByEmail(email: string): Promise<UserData | null> {
     return this.prisma.user.findUnique({
       where: {
         email,
         deletedAt: null,
+      },
+      select: {
+        id: true,
+        email: true,
+        name: true,
+        birthday: true,
+        cityId: true,
       },
     });
   }

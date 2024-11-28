@@ -2,6 +2,7 @@ import {
   Body,
   Controller,
   Delete,
+  Get,
   HttpCode,
   Param,
   ParseIntPipe,
@@ -48,5 +49,14 @@ export class UserController {
     @Body() payload: UpdateUserPayload,
   ): Promise<UserDto> {
     return this.userService.updateUser(user, userId, payload);
+  }
+
+  @Get(':userId')
+  @ApiOperation({ summary: '유저 정보 조회' })
+  @ApiOkResponse({ type: UserDto })
+  async getUser(
+    @Param('userId', ParseIntPipe) userId: number,
+  ): Promise<UserDto> {
+    return this.userService.getUser(userId);
   }
 }
