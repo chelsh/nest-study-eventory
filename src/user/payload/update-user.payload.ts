@@ -3,6 +3,7 @@ import { Type } from 'class-transformer';
 import {
   IsDate,
   IsInt,
+  IsOptional,
   IsString,
   NotEquals,
   ValidateIf,
@@ -29,7 +30,7 @@ export class UpdateUserPayload {
 
   @Type(() => Date)
   @IsDate()
-  @NotEquals(undefined)
+  @IsOptional()
   @ApiProperty({
     description: '유저 생년월일',
     type: Date,
@@ -37,7 +38,7 @@ export class UpdateUserPayload {
   birthday?: Date;
 
   @IsInt()
-  @NotEquals(undefined)
+  @IsOptional()
   @ApiProperty({
     description: '유저가 속한 도시 ID',
     type: Number,

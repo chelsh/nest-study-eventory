@@ -17,6 +17,15 @@ export class UserRepository {
     });
   }
 
+  async getUserByEmail(email: string): Promise<User | null> {
+    return this.prisma.user.findUnique({
+      where: {
+        email,
+        deletedAt: null,
+      },
+    });
+  }
+
   async deleteUser(userId: number): Promise<void> {
     await this.prisma.user.update({
       where: {
@@ -45,5 +54,15 @@ export class UserRepository {
         cityId: true,
       },
     });
+  }
+
+  async cityExist(cityId: number): Promise<boolean> {
+    const city = await this.prisma.city.findUnique({
+      where: {
+        id: cityId,
+      },
+    });
+
+    return !!city;
   }
 }
