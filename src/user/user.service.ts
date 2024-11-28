@@ -58,4 +58,14 @@ export class UserService {
 
     return UserDto.from(updatedUser);
   }
+
+  async getUser(userId: number): Promise<UserDto> {
+    const user = await this.userRepository.getUserById(userId);
+
+    if (!user) {
+      throw new NotFoundException('유저가 존재하지 않습니다.');
+    }
+
+    return UserDto.from(user);
+  }
 }
