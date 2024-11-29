@@ -49,7 +49,6 @@ model Event {
   id          Int      @id @default(autoincrement())
   hostId      Int      @map("host_id")
   categoryId  Int      @map("category_id")
-  cityId      Int      @map("city_id")
   title       String
   description String
   maxPeople   Int      @map("max_people")
@@ -60,11 +59,10 @@ model Event {
 
   host     User     @relation(fields: [hostId], references: [id])
   category Category @relation(fields: [categoryId], references: [id])
-  city     City     @relation(fields: [cityId], references: [id])
 
   eventJoin EventJoin[]
   review    Review[]
-  EventCity EventCity[]
+  eventCity EventCity[]
 
   @@map("event")
 }
@@ -132,11 +130,10 @@ model City {
   createdAt DateTime @default(now()) @map("created_at")
   updatedAt DateTime @updatedAt @map("updated_at")
 
-  event Event[]
   user  User[]
 
   region    Region      @relation(fields: [regionId], references: [id])
-  EventCity EventCity[]
+  eventCity EventCity[]
 
   @@map("city")
 }

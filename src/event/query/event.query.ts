@@ -1,6 +1,6 @@
 import { ApiPropertyOptional } from '@nestjs/swagger';
 import { Type } from 'class-transformer';
-import { IsInt, IsOptional } from 'class-validator';
+import { IsArray, IsInt, IsOptional } from 'class-validator';
 
 export class EventQuery {
   @IsOptional()
@@ -13,7 +13,8 @@ export class EventQuery {
   hostId?: number;
 
   @IsOptional()
-  @IsInt()
+  @IsArray()
+  @IsInt({ each: true })
   @Type(() => Number)
   @ApiPropertyOptional({
     description: 'city ID',

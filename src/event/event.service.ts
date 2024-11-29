@@ -25,16 +25,19 @@ export class EventService {
     const categoryExistPromise = this.eventRepository.categoryExist(
       payload.categoryId,
     );
-    const cityExistPromise = this.eventRepository.cityExist(payload.cityId);
-    const [categoryExist, cityExist] = await Promise.all([
+    const cityExistPromises = payload.cityIdList.map((cityId) =>
+      this.eventRepository.cityExist(cityId),
+    );
+
+    const [categoryExist, citiesExist] = await Promise.all([
       categoryExistPromise,
-      cityExistPromise,
+      await Promise.all(cityExistPromises),
     ]);
 
     if (!categoryExist) {
       throw new NotFoundException('해당 카테고리가 존재하지 않습니다.');
     }
-    if (!cityExist) {
+    if (citiesExist.includes(false)) {
       throw new NotFoundException('해당 도시가 존재하지 않습니다.');
     }
 
@@ -53,7 +56,7 @@ export class EventService {
       title: payload.title,
       description: payload.description,
       categoryId: payload.categoryId,
-      cityId: payload.cityId,
+      cityIdList: payload.cityIdList,
       startTime: payload.startTime,
       endTime: payload.endTime,
       maxPeople: payload.maxPeople,
@@ -160,9 +163,13 @@ export class EventService {
       }
     }
 
-    if (payload.cityId) {
-      const cityExist = this.eventRepository.categoryExist(payload.cityId);
-      if (!cityExist) {
+    if (payload.cityIdList) {
+      const cityPromises = payload.cityIdList.map((cityId) =>
+        this.eventRepository.cityExist(cityId),
+      );
+      const citiesExist = await Promise.all(cityPromises);
+
+      if (citiesExist.includes(false)) {
         throw new NotFoundException('해당 도시가 존재하지 않습니다.');
       }
     }
@@ -198,7 +205,7 @@ export class EventService {
       title: payload.title,
       description: payload.description,
       categoryId: payload.categoryId,
-      cityId: payload.cityId,
+      cityIdList: payload.cityIdList,
       startTime: payload.startTime,
       endTime: payload.endTime,
       maxPeople: payload.maxPeople,
