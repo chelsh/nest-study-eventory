@@ -158,8 +158,8 @@ model Club {
 
   host User @relation(fields: [hostId], references: [id])
 
-  ClubJoin ClubJoin[]
-  Event    Event[]
+  clubJoin ClubJoin[]
+  event    Event[]
 
   @@map("club")
 }

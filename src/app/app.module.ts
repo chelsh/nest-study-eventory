@@ -10,6 +10,7 @@ import { UserModule } from '../user/user.module';
 import { CategoryModule } from 'src/category/category.module';
 import { EventModule } from 'src/event/event.module';
 import { AuthModule } from 'src/auth/auth.module';
+import { ClubModule } from 'src/club/club.module';
 
 @Module({
   imports: [
@@ -21,6 +22,7 @@ import { AuthModule } from 'src/auth/auth.module';
     CategoryModule,
     EventModule,
     AuthModule,
+    ClubModule,
   ],
   controllers: [AppController],
   providers: [AppService],

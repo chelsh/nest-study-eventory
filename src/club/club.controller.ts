@@ -20,7 +20,7 @@ export class ClubController {
   @Post()
   @UseGuards(JwtAuthGuard)
   @ApiBearerAuth()
-  @ApiOperation({ summary: '이벤트를 생성합니다' })
+  @ApiOperation({ summary: '클럽을 생성합니다.' })
   @ApiCreatedResponse({ type: ClubDto })
   async createEvent(
     @CurrentUser() user: UserBaseInfo,
