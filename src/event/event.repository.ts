@@ -222,6 +222,55 @@ export class EventRepository {
     data: UpdateEventData,
   ): Promise<EventDetailData> {
     return this.prisma.$transaction(async (prisma) => {
+      if (data.cityIdList === undefined) {
+        return prisma.event.update({
+          where: { id: eventId },
+          data: {
+            title: data.title,
+            description: data.description,
+            categoryId: data.categoryId,
+            startTime: data.startTime,
+            endTime: data.endTime,
+            maxPeople: data.maxPeople,
+          },
+          select: {
+            id: true,
+            hostId: true,
+            title: true,
+            description: true,
+            categoryId: true,
+            eventCity: {
+              select: {
+                cityId: true,
+              },
+            },
+            startTime: true,
+            endTime: true,
+            maxPeople: true,
+            eventJoin: {
+              select: {
+                user: {
+                  select: {
+                    id: true,
+                    name: true,
+                  },
+                },
+              },
+            },
+            review: {
+              select: {
+                id: true,
+                eventId: true,
+                userId: true,
+                score: true,
+                title: true,
+                description: true,
+              },
+            },
+          },
+        });
+      }
+
       await prisma.eventCity.deleteMany({
         where: { eventId },
       });
