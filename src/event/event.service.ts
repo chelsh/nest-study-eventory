@@ -22,16 +22,9 @@ export class EventService {
     userId: number,
     payload: CreateEventPayload,
   ): Promise<EventDetailDto> {
-    const categoryExistPromise = this.eventRepository.categoryExist(
-      payload.categoryId,
-    );
-    const cityExistPromises = payload.cityIdList.map((cityId) =>
-      this.eventRepository.cityExist(cityId),
-    );
-
     const [categoryExist, citiesExist] = await Promise.all([
-      categoryExistPromise,
-      await Promise.all(cityExistPromises),
+      this.eventRepository.categoryExist(payload.categoryId),
+      this.eventRepository.citiesExist(payload.cityIdList),
     ]);
 
     if (!categoryExist) {
@@ -164,10 +157,9 @@ export class EventService {
     }
 
     if (payload.cityIdList) {
-      const cityPromises = payload.cityIdList.map((cityId) =>
-        this.eventRepository.cityExist(cityId),
+      const citiesExist = await this.eventRepository.citiesExist(
+        payload.cityIdList,
       );
-      const citiesExist = await Promise.all(cityPromises);
 
       if (citiesExist.includes(false)) {
         throw new NotFoundException('해당 도시가 존재하지 않습니다.');

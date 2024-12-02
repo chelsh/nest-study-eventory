@@ -101,6 +101,21 @@ export class EventRepository {
     return !!city;
   }
 
+  async citiesExist(cityIdList: number[]): Promise<boolean[]> {
+    const cities = await this.prisma.city.findMany({
+      where: {
+        id: {
+          in: cityIdList,
+        },
+      },
+      select: { id: true },
+    });
+
+    const existingCityIds = cities.map((city) => city.id);
+
+    return cityIdList.map((cityId) => existingCityIds.includes(cityId));
+  }
+
   async joinUserToEvent(eventId: number, userId: number): Promise<void> {
     await this.prisma.eventJoin.create({
       data: { eventId, userId },
