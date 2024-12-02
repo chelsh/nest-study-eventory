@@ -91,16 +91,6 @@ export class EventRepository {
     return !!category;
   }
 
-  async cityExist(cityId: number): Promise<boolean> {
-    const city = await this.prisma.city.findUnique({
-      where: {
-        id: cityId,
-      },
-    });
-
-    return !!city;
-  }
-
   async citiesExist(cityIdList: number[]): Promise<boolean[]> {
     const cities = await this.prisma.city.findMany({
       where: {
