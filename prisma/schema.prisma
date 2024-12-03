@@ -29,7 +29,9 @@ model User {
   eventJoin EventJoin[]
   review    Review[]
 
-  city City? @relation(fields: [cityId], references: [id])
+  city     City?      @relation(fields: [cityId], references: [id])
+  Club     Club[]
+  ClubJoin ClubJoin[]
 
   @@map("user")
 }
@@ -54,11 +56,16 @@ model Event {
   maxPeople   Int      @map("max_people")
   startTime   DateTime @map("start_time")
   endTime     DateTime @map("end_time")
-  createdAt   DateTime @default(now()) @map("created_at")
-  updatedAt   DateTime @updatedAt @map("updated_at")
+  clubId      Int?     @map("club_id")
+
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
 
   host     User     @relation(fields: [hostId], references: [id])
   category Category @relation(fields: [categoryId], references: [id])
+
+  city     City     @relation(fields: [cityId], references: [id])
+  club     Club?    @relation(fields: [clubId], references: [id])
 
   eventJoin EventJoin[]
   review    Review[]
@@ -136,4 +143,46 @@ model City {
   eventCity EventCity[]
 
   @@map("city")
+}
+
+model Club {
+  id          Int    @id @default(autoincrement())
+  hostId      Int    @map("host_id")
+  name        String @unique
+  description String
+  maxPeople   Int    @map("max_people")
+
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  host User @relation(fields: [hostId], references: [id])
+
+  ClubJoin ClubJoin[]
+  Event    Event[]
+
+  @@map("club")
+}
+
+model ClubJoin {
+  id        Int       @id @default(autoincrement())
+  userId    Int       @map("user_id")
+  clubId    Int       @map("club_id")
+  joinState JoinState @map("join_state")
+
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  user User @relation(fields: [userId], references: [id])
+  club Club @relation(fields: [clubId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, clubId])
+  @@map("club_join")
+}
+
+enum JoinState {
+  PENDING
+  JOINED
+  REFUSED
+
+  @@map("join_state")
 }
