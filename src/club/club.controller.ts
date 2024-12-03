@@ -44,7 +44,7 @@ export class ClubController {
   @HttpCode(204)
   @ApiOperation({ summary: '클럽에 가입 신청합니다.' })
   @ApiNoContentResponse()
-  async joinEvent(
+  async joinClub(
     @CurrentUser() user: UserBaseInfo,
     @Param('clubId', ParseIntPipe) clubId: number,
   ): Promise<void> {
@@ -59,7 +59,7 @@ export class ClubController {
     summary: '클럽 가입 요청을 철회하거나, 클럽에서 탈퇴합니다.',
   })
   @ApiNoContentResponse()
-  async outEvent(
+  async outClub(
     @CurrentUser() user: UserBaseInfo,
     @Param('clubId', ParseIntPipe) clubId: number,
   ): Promise<void> {
