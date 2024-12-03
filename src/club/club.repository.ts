@@ -34,4 +34,71 @@ export class ClubRepository {
       },
     });
   }
+
+  async getClubById(clubId: number): Promise<ClubData | null> {
+    return this.prisma.club.findUnique({
+      where: {
+        id: clubId,
+      },
+      select: {
+        id: true,
+        hostId: true,
+        name: true,
+        description: true,
+        maxPeople: true,
+      },
+    });
+  }
+
+  async getJoinState(
+    clubId: number,
+    userId: number,
+  ): Promise<JoinState | undefined> {
+    const clubJoin = await this.prisma.clubJoin.findUnique({
+      where: {
+        userId_clubId: {
+          userId,
+          clubId,
+        },
+        user: {
+          deletedAt: null,
+        },
+      },
+      select: {
+        joinState: true,
+      },
+    });
+
+    return clubJoin?.joinState;
+  }
+
+  async countJoinedUsers(clubId: number): Promise<number> {
+    const countJoinedUsers = await this.prisma.clubJoin.count({
+      where: {
+        clubId,
+        user: {
+          deletedAt: null,
+        },
+      },
+    });
+
+    return countJoinedUsers;
+  }
+
+  async joinClub(clubId: number, userId: number): Promise<void> {
+    await this.prisma.clubJoin.create({
+      data: { clubId, userId, joinState: JoinState.PENDING },
+    });
+  }
+
+  async outClub(clubId: number, userId: number): Promise<void> {
+    await this.prisma.clubJoin.delete({
+      where: {
+        userId_clubId: {
+          userId,
+          clubId,
+        },
+      },
+    });
+  }
 }
