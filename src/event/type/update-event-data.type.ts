@@ -2,7 +2,7 @@ export type UpdateEventData = {
   title?: string;
   description?: string;
   categoryId?: number;
-  cityId?: number;
+  cityIdList?: number[];
   startTime?: Date;
   endTime?: Date;
   maxPeople?: number;

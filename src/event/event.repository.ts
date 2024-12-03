@@ -18,7 +18,13 @@ export class EventRepository {
         title: data.title,
         description: data.description,
         categoryId: data.categoryId,
-        cityId: data.cityId,
+        eventCity: {
+          createMany: {
+            data: data.cityIdList.map((cityId) => ({
+              cityId: cityId,
+            })),
+          },
+        },
         startTime: data.startTime,
         endTime: data.endTime,
         maxPeople: data.maxPeople,
@@ -34,7 +40,11 @@ export class EventRepository {
         title: true,
         description: true,
         categoryId: true,
-        cityId: true,
+        eventCity: {
+          select: {
+            cityId: true,
+          },
+        },
         startTime: true,
         endTime: true,
         maxPeople: true,
@@ -81,14 +91,19 @@ export class EventRepository {
     return !!category;
   }
 
-  async cityExist(cityId: number): Promise<boolean> {
-    const city = await this.prisma.city.findUnique({
+  async citiesExist(cityIdList: number[]): Promise<boolean[]> {
+    const cities = await this.prisma.city.findMany({
       where: {
-        id: cityId,
+        id: {
+          in: cityIdList,
+        },
       },
+      select: { id: true },
     });
 
-    return !!city;
+    const existingCityIds = cities.map((city) => city.id);
+
+    return cityIdList.map((cityId) => existingCityIds.includes(cityId));
   }
 
   async joinUserToEvent(eventId: number, userId: number): Promise<void> {
@@ -106,7 +121,11 @@ export class EventRepository {
         title: true,
         description: true,
         categoryId: true,
-        cityId: true,
+        eventCity: {
+          select: {
+            cityId: true,
+          },
+        },
         startTime: true,
         endTime: true,
         maxPeople: true,
@@ -138,7 +157,11 @@ export class EventRepository {
     return await this.prisma.event.findMany({
       where: {
         hostId: query.hostId,
-        cityId: query.cityId,
+        eventCity: {
+          some: {
+            cityId: query.cityId,
+          },
+        },
         categoryId: query.categoryId,
       },
       select: {
@@ -147,7 +170,11 @@ export class EventRepository {
         title: true,
         description: true,
         categoryId: true,
-        cityId: true,
+        eventCity: {
+          select: {
+            cityId: true,
+          },
+        },
         startTime: true,
         endTime: true,
         maxPeople: true,
@@ -199,46 +226,147 @@ export class EventRepository {
     eventId: number,
     data: UpdateEventData,
   ): Promise<EventDetailData> {
-    return this.prisma.event.update({
-      where: { id: eventId },
-      data: data,
-      select: {
-        id: true,
-        hostId: true,
-        title: true,
-        description: true,
-        categoryId: true,
-        cityId: true,
-        startTime: true,
-        endTime: true,
-        maxPeople: true,
-        eventJoin: {
+    return this.prisma.$transaction(async (prisma) => {
+      if (data.cityIdList === undefined) {
+        return prisma.event.update({
+          where: { id: eventId },
+          data: {
+            title: data.title,
+            description: data.description,
+            categoryId: data.categoryId,
+            startTime: data.startTime,
+            endTime: data.endTime,
+            maxPeople: data.maxPeople,
+          },
           select: {
-            user: {
+            id: true,
+            hostId: true,
+            title: true,
+            description: true,
+            categoryId: true,
+            eventCity: {
+              select: {
+                cityId: true,
+              },
+            },
+            startTime: true,
+            endTime: true,
+            maxPeople: true,
+            eventJoin: {
+              select: {
+                user: {
+                  select: {
+                    id: true,
+                    name: true,
+                  },
+                },
+              },
+            },
+            review: {
               select: {
                 id: true,
-                name: true,
+                eventId: true,
+                userId: true,
+                score: true,
+                title: true,
+                description: true,
               },
             },
           },
+        });
+      }
+
+      await prisma.eventCity.deleteMany({
+        where: { eventId },
+      });
+
+      return prisma.event.update({
+        where: { id: eventId },
+        data: {
+          title: data.title,
+          description: data.description,
+          categoryId: data.categoryId,
+          eventCity: {
+            createMany: {
+              data:
+                data.cityIdList?.map((cityId) => ({
+                  cityId: cityId,
+                })) || [],
+            },
+          },
+          startTime: data.startTime,
+          endTime: data.endTime,
+          maxPeople: data.maxPeople,
         },
-        review: {
-          select: {
-            id: true,
-            eventId: true,
-            userId: true,
-            score: true,
-            title: true,
-            description: true,
+        select: {
+          id: true,
+          hostId: true,
+          title: true,
+          description: true,
+          categoryId: true,
+          eventCity: {
+            select: {
+              cityId: true,
+            },
+          },
+          startTime: true,
+          endTime: true,
+          maxPeople: true,
+          eventJoin: {
+            select: {
+              user: {
+                select: {
+                  id: true,
+                  name: true,
+                },
+              },
+            },
+          },
+          review: {
+            select: {
+              id: true,
+              eventId: true,
+              userId: true,
+              score: true,
+              title: true,
+              description: true,
+            },
           },
         },
-      },
+      });
     });
   }
 
   async deleteEvent(eventId: number): Promise<void> {
     await this.prisma.event.delete({
       where: { id: eventId },
+    });
+  }
+
+  async getMyEvents(userId: number): Promise<EventData[]> {
+    return this.prisma.event.findMany({
+      where: {
+        eventJoin: {
+          some: {
+            userId,
+          },
+        },
+      },
+      select: {
+        id: true,
+        hostId: true,
+        title: true,
+        description: true,
+        categoryId: true,
+        eventCity: {
+          select: {
+            cityId: true,
+          },
+        },
+        startTime: true,
+        endTime: true,
+        maxPeople: true,
+      },
     });
   }
 }

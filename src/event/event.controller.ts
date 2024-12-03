@@ -104,11 +104,20 @@ export class EventController {
     return this.eventService.updateEvent(eventId, payload, user.id);
   }
 
+  @Get('me')
+  @UseGuards(JwtAuthGuard)
+  @ApiBearerAuth()
+  @ApiOperation({ summary: '이벤트를 삭제합니다.' })
+  @ApiOkResponse({ type: EventListDto })
+  async getMyEvents(@CurrentUser() user: UserBaseInfo): Promise<EventListDto> {
+    return this.eventService.getMyEvents(user.id);
+  }
+
   @Delete(':eventId')
   @UseGuards(JwtAuthGuard)
   @ApiBearerAuth()
   @HttpCode(204)
-  @ApiOperation({ summary: '이벤트를 삭제합니다.' })
+  @ApiOperation({ summary: '내가 속한 이벤트 목록을 조회합니다.' })
   @ApiNoContentResponse()
   async deleteEvent(
     @CurrentUser() user: UserBaseInfo,

@@ -22,19 +22,15 @@ export class EventService {
     userId: number,
     payload: CreateEventPayload,
   ): Promise<EventDetailDto> {
-    const categoryExistPromise = this.eventRepository.categoryExist(
-      payload.categoryId,
-    );
-    const cityExistPromise = this.eventRepository.cityExist(payload.cityId);
-    const [categoryExist, cityExist] = await Promise.all([
-      categoryExistPromise,
-      cityExistPromise,
+    const [categoryExist, citiesExist] = await Promise.all([
+      this.eventRepository.categoryExist(payload.categoryId),
+      this.eventRepository.citiesExist(payload.cityIdList),
     ]);
 
     if (!categoryExist) {
       throw new NotFoundException('해당 카테고리가 존재하지 않습니다.');
     }
-    if (!cityExist) {
+    if (citiesExist.includes(false)) {
       throw new NotFoundException('해당 도시가 존재하지 않습니다.');
     }
 
@@ -53,7 +49,7 @@ export class EventService {
       title: payload.title,
       description: payload.description,
       categoryId: payload.categoryId,
-      cityId: payload.cityId,
+      cityIdList: payload.cityIdList,
       startTime: payload.startTime,
       endTime: payload.endTime,
       maxPeople: payload.maxPeople,
@@ -160,9 +156,12 @@ export class EventService {
       }
     }
 
-    if (payload.cityId) {
-      const cityExist = this.eventRepository.categoryExist(payload.cityId);
-      if (!cityExist) {
+    if (payload.cityIdList) {
+      const citiesExist = await this.eventRepository.citiesExist(
+        payload.cityIdList,
+      );
+
+      if (citiesExist.includes(false)) {
         throw new NotFoundException('해당 도시가 존재하지 않습니다.');
       }
     }
@@ -198,7 +197,7 @@ export class EventService {
       title: payload.title,
       description: payload.description,
       categoryId: payload.categoryId,
-      cityId: payload.cityId,
+      cityIdList: payload.cityIdList,
       startTime: payload.startTime,
       endTime: payload.endTime,
       maxPeople: payload.maxPeople,
@@ -227,5 +226,11 @@ export class EventService {
     }
 
     return this.eventRepository.deleteEvent(eventId);
+  }
+
+  async getMyEvents(userId: number): Promise<EventListDto> {
+    const myEvents = await this.eventRepository.getMyEvents(userId);
+
+    return EventListDto.from(myEvents);
   }
 }

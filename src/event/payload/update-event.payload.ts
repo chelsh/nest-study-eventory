@@ -1,6 +1,7 @@
 import { ApiProperty } from '@nestjs/swagger';
 import { Type } from 'class-transformer';
 import {
+  IsArray,
   IsDate,
   IsInt,
   IsString,
@@ -37,14 +38,15 @@ export class UpdateEventPayload {
   })
   categoryId?: number;
 
-  @IsInt()
+  @IsArray()
+  @IsInt({ each: true })
   @NotEquals(null)
   @ValidateIf((object, value) => value !== undefined)
   @ApiProperty({
     description: '이벤트 도시 ID',
-    type: Number,
+    type: [Number],
   })
-  cityId?: number;
+  cityIdList?: number[];
 
   @Type(() => Date)
   @IsDate()
