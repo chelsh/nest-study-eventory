@@ -64,7 +64,6 @@ model Event {
   host     User     @relation(fields: [hostId], references: [id])
   category Category @relation(fields: [categoryId], references: [id])
 
-  city     City     @relation(fields: [cityId], references: [id])
   club     Club?    @relation(fields: [clubId], references: [id])
 
   eventJoin EventJoin[]
