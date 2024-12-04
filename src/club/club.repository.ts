@@ -79,6 +79,7 @@ export class ClubRepository {
         user: {
           deletedAt: null,
         },
+        joinState: JoinState.JOINED,
       },
     });
 
@@ -92,13 +93,48 @@ export class ClubRepository {
   }
 
   async outClub(clubId: number, userId: number): Promise<void> {
-    await this.prisma.clubJoin.delete({
-      where: {
-        userId_clubId: {
-          userId,
+    return this.prisma.$transaction(async (prisma) => {
+      const clubEventsJoinedByUser = await prisma.event.findMany({
+        where: {
           clubId,
+          eventJoin: {
+            some: {
+              userId,
+            },
+          },
         },
-      },
+      });
+
+      clubEventsJoinedByUser.map(async (event) => {
+        //이벤트 시작 전인 경우) 호스트면 이벤트 삭제, 일반 참여자면 모임에서 나가기
+        if (new Date() < event.startTime) {
+          if (event.hostId === userId) {
+            await prisma.event.delete({
+              where: {
+                id: event.id,
+              },
+            });
+          } else {
+            await prisma.eventJoin.delete({
+              where: {
+                eventId_userId: {
+                  eventId: event.id,
+                  userId,
+                },
+              },
+            });
+          }
+        }
+      });
+
+      await this.prisma.clubJoin.delete({
+        where: {
+          userId_clubId: {
+            userId,
+            clubId,
+          },
+        },
+      });
     });
   }
 }
