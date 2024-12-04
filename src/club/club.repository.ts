@@ -94,6 +94,7 @@ export class ClubRepository {
 
   async outClub(clubId: number, userId: number): Promise<void> {
     return this.prisma.$transaction(async (prisma) => {
+      //이벤트 시작 전인 경우) 호스트면 이벤트 삭제, 일반 참여자면 모임에서 나가기
       const clubEventsJoinedByUser = await prisma.event.findMany({
         where: {
           clubId,
@@ -103,29 +104,46 @@ export class ClubRepository {
             },
           },
         },
+        select: {
+          id: true,
+          startTime: true,
+          hostId: true,
+        },
       });
 
-      clubEventsJoinedByUser.map(async (event) => {
-        //이벤트 시작 전인 경우) 호스트면 이벤트 삭제, 일반 참여자면 모임에서 나가기
-        if (new Date() < event.startTime) {
-          if (event.hostId === userId) {
-            await prisma.event.delete({
-              where: {
-                id: event.id,
-              },
-            });
-          } else {
-            await prisma.eventJoin.delete({
-              where: {
-                eventId_userId: {
-                  eventId: event.id,
-                  userId,
-                },
-              },
-            });
-          }
-        }
-      });
+      const deleteEvents = clubEventsJoinedByUser
+        .filter(
+          (event) => new Date() < event.startTime && event.hostId === userId,
+        )
+        .map((event) => event.id);
+
+      const removeEventJoins = clubEventsJoinedByUser
+        .filter(
+          (event) => new Date() < event.startTime && event.hostId !== userId,
+        )
+        .map((event) => ({
+          eventId: event.id,
+          userId,
+        }));
+
+      if (deleteEvents.length > 0) {
+        await prisma.event.deleteMany({
+          where: {
+            id: { in: deleteEvents },
+          },
+        });
+      }
+
+      if (removeEventJoins.length > 0) {
+        await prisma.eventJoin.deleteMany({
+          where: {
+            OR: removeEventJoins.map((join) => ({
+              eventId: join.eventId,
+              userId: join.userId,
+            })),
+          },
+        });
+      }
 
       await this.prisma.clubJoin.delete({
         where: {
