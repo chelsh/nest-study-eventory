@@ -117,13 +117,12 @@ export class ClubRepository {
         )
         .map((event) => event.id);
 
-      const removeEventJoins = clubEventsJoinedByUser
+      const removeEvents = clubEventsJoinedByUser
         .filter(
           (event) => new Date() < event.startTime && event.hostId !== userId,
         )
         .map((event) => ({
           eventId: event.id,
-          userId,
         }));
 
       if (deleteEvents.length > 0) {
@@ -134,13 +133,13 @@ export class ClubRepository {
         });
       }
 
-      if (removeEventJoins.length > 0) {
+      if (removeEvents.length > 0) {
         await prisma.eventJoin.deleteMany({
           where: {
-            OR: removeEventJoins.map((join) => ({
-              eventId: join.eventId,
-              userId: join.userId,
-            })),
+            userId,
+            eventId: {
+              in: removeEvents.map((event) => event.eventId),
+            },
           },
         });
       }
