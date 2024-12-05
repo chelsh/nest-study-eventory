@@ -3,6 +3,7 @@ import { PrismaService } from 'src/common/services/prisma.service';
 import { CreateClubData } from './type/create-club-data.type';
 import { ClubData } from './type/club-data.type';
 import { JoinState } from '@prisma/client';
+import { UpdateClubData } from './type/update-club-data.type';
 
 @Injectable()
 export class ClubRepository {
@@ -150,6 +151,34 @@ export class ClubRepository {
             userId,
             clubId,
           },
+        },
+      });
+    });
+  }
+
+  async updateClub(clubId: number, data: UpdateClubData): Promise<ClubData> {
+    return this.prisma.club.update({
+      where: {
+        id: clubId,
+      },
+      data,
+    });
+  }
+
+  async deleteClub(clubId: number): Promise<void> {
+    return this.prisma.$transaction(async (prisma) => {
+      prisma.club.delete({
+        where: {
+          id: clubId,
+        },
+      });
+
+      prisma.event.updateMany({
+        where: {
+          id: clubId,
+        },
+        data: {
+          clubId: null,
         },
       });
     });
