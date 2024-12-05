@@ -118,7 +118,7 @@ export class ClubRepository {
         )
         .map((event) => event.id);
 
-      const removeEvents = clubEventsJoinedByUser
+      const removeEventJoins = clubEventsJoinedByUser
         .filter(
           (event) => new Date() < event.startTime && event.hostId !== userId,
         )
@@ -134,12 +134,12 @@ export class ClubRepository {
         });
       }
 
-      if (removeEvents.length > 0) {
+      if (removeEventJoins.length > 0) {
         await prisma.eventJoin.deleteMany({
           where: {
             userId,
             eventId: {
-              in: removeEvents.map((event) => event.eventId),
+              in: removeEventJoins.map((event) => event.eventId),
             },
           },
         });
@@ -173,9 +173,33 @@ export class ClubRepository {
         },
       });
 
+      const clubEvents = await prisma.event.findMany({
+        where: {
+          clubId,
+        },
+      });
+
+      const deleteEvents = clubEvents
+        .filter((event) => new Date() < event.startTime)
+        .map((event) => event.id);
+
+      const updateToNormalEvents = clubEvents
+        .filter((event) => new Date() >= event.startTime)
+        .map((event) => event.id);
+
+      prisma.event.deleteMany({
+        where: {
+          id: {
+            in: deleteEvents,
+          },
+        },
+      });
+
       prisma.event.updateMany({
         where: {
-          id: clubId,
+          id: {
+            in: updateToNormalEvents,
+          },
         },
         data: {
           clubId: null,
