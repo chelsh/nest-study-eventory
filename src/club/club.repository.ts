@@ -187,24 +187,28 @@ export class ClubRepository {
         .filter((event) => new Date() >= event.startTime)
         .map((event) => event.id);
 
-      prisma.event.deleteMany({
-        where: {
-          id: {
-            in: deleteEvents,
+      if (deleteEvents.length > 0) {
+        await prisma.event.deleteMany({
+          where: {
+            id: {
+              in: deleteEvents,
+            },
           },
-        },
-      });
+        });
+      }
 
-      prisma.event.updateMany({
-        where: {
-          id: {
-            in: updateToNormalEvents,
+      if (updateToNormalEvents.length > 0) {
+        await prisma.event.updateMany({
+          where: {
+            id: {
+              in: updateToNormalEvents,
+            },
           },
-        },
-        data: {
-          clubId: null,
-        },
-      });
+          data: {
+            clubId: null,
+          },
+        });
+      }
     });
   }
 }
