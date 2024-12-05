@@ -1,6 +1,7 @@
 import { ClubRepository } from './club.repository';
 import {
   ConflictException,
+  ForbiddenException,
   Injectable,
   NotFoundException,
 } from '@nestjs/common';
@@ -8,6 +9,8 @@ import { CreateClubPayload } from './payload/create-club.payload';
 import { ClubDto } from './dto/club.dto';
 import { CreateClubData } from './type/create-club-data.type';
 import { JoinState } from '@prisma/client';
+import { UpdateClubPayload } from './payload/update-club.payload';
+import { UpdateClubData } from './type/update-club-data.type';
 
 @Injectable()
 export class ClubService {
@@ -84,5 +87,56 @@ export class ClubService {
     }
 
     await this.clubRepository.outClub(clubId, userId);
+  }
+
+  async updateClub(
+    clubId: number,
+    payload: UpdateClubPayload,
+    userId: number,
+  ): Promise<ClubDto> {
+    const club = await this.clubRepository.getClubById(clubId);
+    if (!club) {
+      throw new NotFoundException('존재하지 않는 club입니다.');
+    }
+
+    if (club.hostId !== userId) {
+      throw new ForbiddenException('클럽장만 클럽 정보를 수정할 수 있습니다.');
+    }
+
+    if (payload.maxPeople) {
+      const countJoinedUsers =
+        await this.clubRepository.countJoinedUsers(clubId);
+      if (countJoinedUsers > payload.maxPeople) {
+        throw new ConflictException(
+          '클럽 최대 인원을 현재 가입된 회원 수보다 적게 설정할 수 없습니다.',
+        );
+      }
+    }
+
+    const updateClubData: UpdateClubData = {
+      name: payload.name,
+      description: payload.description,
+      maxPeople: payload.maxPeople,
+    };
+
+    const updatedClub = await this.clubRepository.updateClub(
+      clubId,
+      updateClubData,
+    );
+
+    return ClubDto.from(updatedClub);
+  }
+
+  async deleteClub(clubId: number, userId: number): Promise<void> {
+    const club = await this.clubRepository.getClubById(clubId);
+    if (!club) {
+      throw new NotFoundException('존재하지 않는 club입니다.');
+    }
+
+    if (club.hostId !== userId) {
+      throw new ForbiddenException('클럽장만 클럽을 삭제할 수 있습니다.');
+    }
+
+    return this.clubRepository.deleteClub(clubId);
   }
 }

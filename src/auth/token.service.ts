@@ -26,8 +26,7 @@ export class TokenService {
 
       const { iat, exp, ...result } = data; //eslint-disable-line
       return result;
-    } catch (e) {
-      //eslint-disable-line
+    } catch (e) {  //eslint-disable-line
       throw new UnauthorizedException('토큰이 유효하지 않습니다.');
     }
   }
@@ -40,8 +39,7 @@ export class TokenService {
 
       const { iat, exp, ...result } = data; //eslint-disable-line
       return result;
-    } catch (e) {
-      //eslint-disable-line
+    } catch (e) {  //eslint-disable-line
       throw new UnauthorizedException('토큰이 유효하지 않습니다.');
     }
   }
