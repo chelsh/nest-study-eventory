@@ -2,7 +2,7 @@ import { Injectable } from '@nestjs/common';
 import { PrismaService } from '../common/services/prisma.service';
 import { CreateEventData } from './type/create-event-data.type';
 import { EventData } from './type/event-data.type';
-import { User } from '@prisma/client';
+import { JoinState, User } from '@prisma/client';
 import { EventQuery } from './query/event.query';
 import { EventDetailData } from './type/event-detail-data.type';
 import { UpdateEventData } from './type/update-event-data.type';
@@ -58,6 +58,8 @@ export class EventRepository {
             },
           },
         },
+        clubId: true,
+        isArchiveEvent: true,
         review: {
           select: {
             id: true,
@@ -139,6 +141,8 @@ export class EventRepository {
             },
           },
         },
+        clubId: true,
+        isArchiveEvent: true,
         review: {
           select: {
             id: true,
@@ -178,6 +182,8 @@ export class EventRepository {
         startTime: true,
         endTime: true,
         maxPeople: true,
+        clubId: true,
+        isArchiveEvent: true,
       },
     });
   }
@@ -252,6 +258,8 @@ export class EventRepository {
             startTime: true,
             endTime: true,
             maxPeople: true,
+            clubId: true,
+            isArchiveEvent: true,
             eventJoin: {
               select: {
                 user: {
@@ -312,6 +320,8 @@ export class EventRepository {
           startTime: true,
           endTime: true,
           maxPeople: true,
+          clubId: true,
+          isArchiveEvent: true,
           eventJoin: {
             select: {
               user: {
@@ -366,7 +376,23 @@ export class EventRepository {
         startTime: true,
         endTime: true,
         maxPeople: true,
+        clubId: true,
+        isArchiveEvent: true,
       },
     });
+  }
+
+  async isJoinedClub(clubId: number, userId: number): Promise<boolean> {
+    const isJoined = await this.prisma.clubJoin.findUnique({
+      where: {
+        userId_clubId: {
+          userId,
+          clubId,
+        },
+        joinState: JoinState.JOINED,
+      },
+    });
+
+    return !!isJoined;
   }
 }

@@ -183,7 +183,7 @@ export class ClubRepository {
         .filter((event) => new Date() < event.startTime)
         .map((event) => event.id);
 
-      const updateToNormalEvents = clubEvents
+      const updateToArchiveEvents = clubEvents
         .filter((event) => new Date() >= event.startTime)
         .map((event) => event.id);
 
@@ -197,15 +197,16 @@ export class ClubRepository {
         });
       }
 
-      if (updateToNormalEvents.length > 0) {
+      if (updateToArchiveEvents.length > 0) {
         await prisma.event.updateMany({
           where: {
             id: {
-              in: updateToNormalEvents,
+              in: updateToArchiveEvents,
             },
           },
           data: {
             clubId: null,
+            isArchiveEvent: true,
           },
         });
       }

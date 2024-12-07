@@ -1,6 +1,13 @@
 import { ApiProperty } from '@nestjs/swagger';
 import { Type } from 'class-transformer';
-import { IsArray, IsDate, IsInt, IsString, Min } from 'class-validator';
+import {
+  IsArray,
+  IsDate,
+  IsInt,
+  IsOptional,
+  IsString,
+  Min,
+} from 'class-validator';
 
 export class CreateEventPayload {
   @IsString()
@@ -55,4 +62,12 @@ export class CreateEventPayload {
     type: Number,
   })
   maxPeople!: number;
+
+  @IsInt()
+  @IsOptional()
+  @ApiProperty({
+    description: '클럽 ID',
+    type: Number,
+  })
+  clubId?: number;
 }
