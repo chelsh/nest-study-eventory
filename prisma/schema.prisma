@@ -48,15 +48,16 @@ model Category {
 }
 
 model Event {
-  id          Int      @id @default(autoincrement())
-  hostId      Int      @map("host_id")
-  categoryId  Int      @map("category_id")
-  title       String
-  description String
-  maxPeople   Int      @map("max_people")
-  startTime   DateTime @map("start_time")
-  endTime     DateTime @map("end_time")
-  clubId      Int?     @map("club_id")
+  id             Int      @id @default(autoincrement())
+  hostId         Int      @map("host_id")
+  categoryId     Int      @map("category_id")
+  title          String
+  description    String
+  maxPeople      Int      @map("max_people")
+  startTime      DateTime @map("start_time")
+  endTime        DateTime @map("end_time")
+  clubId         Int?     @map("club_id")
+  isArchiveEvent Boolean? @map("is_archive_event")
 
   createdAt DateTime @default(now()) @map("created_at")
   updatedAt DateTime @updatedAt @map("updated_at")
@@ -64,7 +65,7 @@ model Event {
   host     User     @relation(fields: [hostId], references: [id])
   category Category @relation(fields: [categoryId], references: [id])
 
-  club     Club?    @relation(fields: [clubId], references: [id])
+  club Club? @relation(fields: [clubId], references: [id])
 
   eventJoin EventJoin[]
   review    Review[]
@@ -136,7 +137,7 @@ model City {
   createdAt DateTime @default(now()) @map("created_at")
   updatedAt DateTime @updatedAt @map("updated_at")
 
-  user  User[]
+  user User[]
 
   region    Region      @relation(fields: [regionId], references: [id])
   eventCity EventCity[]

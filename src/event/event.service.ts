@@ -44,6 +44,18 @@ export class EventService {
       throw new BadRequestException('Event는 시작 후에 종료될 수 있습니다.');
     }
 
+    if (payload.clubId) {
+      const isJoinedClub = await this.eventRepository.isJoinedClub(
+        payload.clubId,
+        userId,
+      );
+      if (!isJoinedClub) {
+        throw new ForbiddenException(
+          '클럽 전용 모임은 클럽 회원만 개설할 수 있습니다.',
+        );
+      }
+    }
+
     const createData: CreateEventData = {
       hostId: userId,
       title: payload.title,
@@ -53,6 +65,7 @@ export class EventService {
       startTime: payload.startTime,
       endTime: payload.endTime,
       maxPeople: payload.maxPeople,
+      clubId: payload.clubId,
     };
 
     const event = await this.eventRepository.createEvent(createData);
@@ -60,18 +73,69 @@ export class EventService {
     return EventDetailDto.from(event);
   }
 
-  async getEventById(eventId: number): Promise<EventDetailDto> {
+  async getEventById(userId: number, eventId: number): Promise<EventDetailDto> {
     const event = await this.eventRepository.getEventById(eventId);
 
     if (!event) {
       throw new NotFoundException('Event가 존재하지 않습니다.');
     }
 
+    if (event.clubId) {
+      const isJoinedClub = await this.eventRepository.isJoinedClub(
+        event.clubId,
+        userId,
+      );
+      if (!isJoinedClub) {
+        throw new ForbiddenException(
+          '클럽 전용 모임은 클럽 회원만 조회 가능합니다.',
+        );
+      }
+    }
+
+    if (event.isArchiveEvent) {
+      const isUserJoinedEvent = await this.eventRepository.isUserJoinedEvent(
+        event.id,
+        userId,
+      );
+      if (!isUserJoinedEvent) {
+        throw new ForbiddenException(
+          '아카이브 모임은 해당 모임에 참여했던 회원만 조회 가능합니다.',
+        );
+      }
+    }
+
     return EventDetailDto.from(event);
   }
 
-  async getEvents(query: EventQuery): Promise<EventListDto> {
+  async getEvents(query: EventQuery, userId: number): Promise<EventListDto> {
     const events = await this.eventRepository.getEvents(query);
+
+    events.filter(async (event) => {
+      //클럽 전용 모임이면 클럽 회원만 조회 가능
+      if (event.clubId) {
+        const isJoined = await this.eventRepository.isJoinedClub(
+          event.clubId,
+          userId,
+        );
+        if (!isJoined) {
+          return false;
+        }
+      }
+
+      //아카이브 모임(삭제된 클럽의 모임)이면 참여했던 회원만 조회 가능
+      if (event.isArchiveEvent) {
+        const isUserJoinedEvent = await this.eventRepository.isUserJoinedEvent(
+          event.id,
+          userId,
+        );
+        if (isUserJoinedEvent) {
+          return false;
+        }
+      }
+
+      return true;
+    });
+
     return EventListDto.from(events);
   }
 
@@ -100,6 +164,18 @@ export class EventService {
       throw new ConflictException(
         '이미 시작된 event에는 참여할 수 없습니다.(진행 중이거나 종료됨)',
       );
+    }
+
+    if (event.clubId) {
+      const isJoinedClub = await this.eventRepository.isJoinedClub(
+        event.clubId,
+        userId,
+      );
+      if (!isJoinedClub) {
+        throw new ForbiddenException(
+          '클럽 전용 모임은 클럽 회원만 참여할 수 있습니다.',
+        );
+      }
     }
 
     await this.eventRepository.joinUserToEvent(eventId, userId);

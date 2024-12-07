@@ -18,5 +18,7 @@ export type EventDetailData = {
       name: string;
     };
   }[];
+  clubId: number | null;
+  isArchiveEvent: boolean | null;
   review: ReviewData[];
 };
