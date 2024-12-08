@@ -11,6 +11,7 @@ import {
   Body,
   Controller,
   Delete,
+  Get,
   HttpCode,
   Param,
   ParseIntPipe,
@@ -20,7 +21,7 @@ import {
   UseGuards,
 } from '@nestjs/common';
 import { JwtAuthGuard } from 'src/auth/guard/jwt-auth.guard';
-import { ClubDto } from './dto/club.dto';
+import { ClubDto, ClubListDto } from './dto/club.dto';
 import { UserBaseInfo } from 'src/auth/type/user-base-info.type';
 import { CurrentUser } from 'src/auth/decorator/user.decorator';
 import { CreateClubPayload } from './payload/create-club.payload';
@@ -138,5 +139,12 @@ export class ClubController {
     @Body() payload: ApprovePayload,
   ): Promise<void> {
     return this.clubService.refuse(clubId, user.id, payload);
+  }
+
+  @Get()
+  @ApiOperation({ summary: '클럽 가입 신청을 거절합니다.(클럽장 권한)' })
+  @ApiOkResponse({ type: ClubListDto })
+  async getClubs(): Promise<ClubListDto> {
+    return this.clubService.getClubs();
   }
 }

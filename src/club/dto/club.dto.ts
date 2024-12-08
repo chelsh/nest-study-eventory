@@ -49,7 +49,7 @@ export class ClubDto {
 
 export class ClubListDto {
   @ApiProperty({
-    description: '이벤트 목록',
+    description: '클럽 목록',
     type: [ClubDto],
   })
   clubs!: ClubDto[];
