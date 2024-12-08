@@ -2,6 +2,8 @@ import { PrismaService } from '../common/services/prisma.service';
 import { Injectable } from '@nestjs/common';
 import { UserData } from './type/user-data.type';
 import { UpdateUserData } from './type/update-user-data.type';
+import { ClubData } from 'src/club/type/club-data.type';
+import { JoinState } from '@prisma/client';
 
 @Injectable()
 export class UserRepository {
@@ -74,5 +76,25 @@ export class UserRepository {
     });
 
     return !!city;
+  }
+
+  async getJoinedClubs(userId: number): Promise<ClubData[]> {
+    return this.prisma.club.findMany({
+      where: {
+        clubJoin: {
+          some: {
+            userId,
+            joinState: JoinState.JOINED,
+          },
+        },
+      },
+      select: {
+        id: true,
+        hostId: true,
+        name: true,
+        description: true,
+        maxPeople: true,
+      },
+    });
   }
 }

@@ -15,6 +15,16 @@ export class UserService {
   constructor(private readonly userRepository: UserRepository) {}
 
   async deleteUser(userId: number): Promise<void> {
+    const joinedClubs = await this.userRepository.getJoinedClubs(userId);
+
+    joinedClubs.map((club) => {
+      if (club.hostId === userId) {
+        throw new ConflictException(
+          '클럽장을 다른 회원에게 위임 후 탈퇴가 가능합니다.',
+        );
+      }
+    });
+
     return this.userRepository.deleteUser(userId);
   }
 
