@@ -142,7 +142,7 @@ export class ClubController {
   }
 
   @Get()
-  @ApiOperation({ summary: '클럽 가입 신청을 거절합니다.(클럽장 권한)' })
+  @ApiOperation({ summary: '클럽 목록을 조회합니다.' })
   @ApiOkResponse({ type: ClubListDto })
   async getClubs(): Promise<ClubListDto> {
     return this.clubService.getClubs();
