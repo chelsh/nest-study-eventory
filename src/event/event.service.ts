@@ -66,6 +66,7 @@ export class EventService {
       endTime: payload.endTime,
       maxPeople: payload.maxPeople,
       clubId: payload.clubId,
+      isArchiveEvent: false,
     };
 
     const event = await this.eventRepository.createEvent(createData);
@@ -110,33 +111,27 @@ export class EventService {
   async getEvents(query: EventQuery, userId: number): Promise<EventListDto> {
     const events = await this.eventRepository.getEvents(query);
 
-    events.filter(async (event) => {
-      //클럽 전용 모임이면 클럽 회원만 조회 가능
-      if (event.clubId) {
-        const isJoined = await this.eventRepository.isJoinedClub(
-          event.clubId,
-          userId,
-        );
-        if (!isJoined) {
-          return false;
-        }
+    const joinedClubs = await this.eventRepository.getJoinedClubs(userId);
+    const joinedClubIds = joinedClubs.map((club) => club.id);
+
+    const joinedEvents = await this.eventRepository.getMyEvents(userId);
+    const joinedEventIds = joinedEvents.map((event) => event.id);
+
+    const filteredEvents = events.filter((event) => {
+      // 클럽 전용 모임이면 클럽 회원만 조회 가능
+      if (event.clubId && !joinedClubIds.includes(event.clubId)) {
+        return false;
       }
 
-      //아카이브 모임(삭제된 클럽의 모임)이면 참여했던 회원만 조회 가능
-      if (event.isArchiveEvent) {
-        const isUserJoinedEvent = await this.eventRepository.isUserJoinedEvent(
-          event.id,
-          userId,
-        );
-        if (isUserJoinedEvent) {
-          return false;
-        }
+      // 아카이브 모임(삭제된 클럽의 모임)이면 참여했던 회원만 조회 가능
+      if (event.isArchiveEvent && !joinedEventIds.includes(event.id)) {
+        return false;
       }
 
       return true;
     });
 
-    return EventListDto.from(events);
+    return EventListDto.from(filteredEvents);
   }
 
   async joinEvent(eventId: number, userId: number): Promise<void> {
