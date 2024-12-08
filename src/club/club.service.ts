@@ -226,6 +226,9 @@ export class ClubService {
     if (joinState === JoinState.JOINED) {
       throw new ConflictException('이미 클럽 회원인 유저입니다.');
     }
+    if (joinState === JoinState.REFUSED) {
+      throw new ConflictException('이미 가입 거절된 유저입니다.');
+    }
     if (!joinState) {
       throw new ConflictException('가입 신청하지 않은 유저입니다.');
     }
