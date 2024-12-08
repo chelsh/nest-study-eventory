@@ -8,4 +8,5 @@ export type CreateEventData = {
   endTime: Date;
   maxPeople: number;
   clubId?: number;
+  isArchiveEvent: boolean;
 };

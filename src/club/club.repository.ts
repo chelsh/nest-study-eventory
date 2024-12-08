@@ -166,16 +166,15 @@ export class ClubRepository {
   }
 
   async deleteClub(clubId: number): Promise<void> {
+    const clubEvents = await this.prisma.event.findMany({
+      where: {
+        clubId,
+      },
+    });
     return this.prisma.$transaction(async (prisma) => {
       prisma.club.delete({
         where: {
           id: clubId,
-        },
-      });
-
-      const clubEvents = await prisma.event.findMany({
-        where: {
-          clubId,
         },
       });
 

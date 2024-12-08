@@ -57,7 +57,7 @@ model Event {
   startTime      DateTime @map("start_time")
   endTime        DateTime @map("end_time")
   clubId         Int?     @map("club_id")
-  isArchiveEvent Boolean? @map("is_archive_event")
+  isArchiveEvent Boolean  @map("is_archive_event")
 
   createdAt DateTime @default(now()) @map("created_at")
   updatedAt DateTime @updatedAt @map("updated_at")

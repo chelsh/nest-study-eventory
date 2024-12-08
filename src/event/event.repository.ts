@@ -6,6 +6,7 @@ import { JoinState, User } from '@prisma/client';
 import { EventQuery } from './query/event.query';
 import { EventDetailData } from './type/event-detail-data.type';
 import { UpdateEventData } from './type/update-event-data.type';
+import { ClubData } from 'src/club/type/club-data.type';
 
 @Injectable()
 export class EventRepository {
@@ -33,6 +34,7 @@ export class EventRepository {
             userId: data.hostId,
           },
         },
+        isArchiveEvent: data.isArchiveEvent,
       },
       select: {
         id: true,
@@ -394,5 +396,24 @@ export class EventRepository {
     });
 
     return !!isJoined;
+  }
+
+  async getJoinedClubs(userId: number): Promise<ClubData[]> {
+    return this.prisma.club.findMany({
+      where: {
+        clubJoin: {
+          some: {
+            userId,
+          },
+        },
+      },
+      select: {
+        id: true,
+        hostId: true,
+        name: true,
+        description: true,
+        maxPeople: true,
+      },
+    });
   }
 }
