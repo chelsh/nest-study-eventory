@@ -6,7 +6,7 @@ import {
   NotFoundException,
 } from '@nestjs/common';
 import { CreateClubPayload } from './payload/create-club.payload';
-import { ClubDto } from './dto/club.dto';
+import { ClubDto, ClubListDto } from './dto/club.dto';
 import { CreateClubData } from './type/create-club-data.type';
 import { JoinState } from '@prisma/client';
 import { UpdateClubPayload } from './payload/update-club.payload';
@@ -234,5 +234,11 @@ export class ClubService {
     }
 
     await this.clubRepository.refuse(clubId, payload.userId);
+  }
+
+  async getClubs(): Promise<ClubListDto> {
+    const clubs = await this.clubRepository.getClubs();
+
+    return ClubListDto.from(clubs);
   }
 }

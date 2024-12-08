@@ -251,4 +251,16 @@ export class ClubRepository {
       data: { joinState: JoinState.REFUSED },
     });
   }
+
+  async getClubs(): Promise<ClubData[]> {
+    return this.prisma.club.findMany({
+      select: {
+        id: true,
+        hostId: true,
+        name: true,
+        description: true,
+        maxPeople: true,
+      },
+    });
+  }
 }
