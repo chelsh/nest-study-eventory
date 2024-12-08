@@ -211,4 +211,44 @@ export class ClubRepository {
       }
     });
   }
+
+  async delegate(clubId: number, userId: number): Promise<ClubData> {
+    return this.prisma.club.update({
+      where: { id: clubId },
+      data: {
+        hostId: userId,
+      },
+      select: {
+        id: true,
+        hostId: true,
+        name: true,
+        description: true,
+        maxPeople: true,
+      },
+    });
+  }
+
+  async approve(clubId: number, userId: number): Promise<void> {
+    await this.prisma.clubJoin.update({
+      where: {
+        userId_clubId: {
+          userId,
+          clubId,
+        },
+      },
+      data: { joinState: JoinState.JOINED },
+    });
+  }
+
+  async refuse(clubId: number, userId: number): Promise<void> {
+    await this.prisma.clubJoin.update({
+      where: {
+        userId_clubId: {
+          userId,
+          clubId,
+        },
+      },
+      data: { joinState: JoinState.REFUSED },
+    });
+  }
 }
